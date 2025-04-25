@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/CRDT.iml" filepath="$PROJECT_DIR$/CRDT.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CRDT tree trial.iml" filepath="$PROJECT_DIR$/CRDT tree trial.iml" />
     </modules>
   </component>
 </project>
