@@ -1,3 +1,4 @@
+package CRDT;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -5,7 +6,6 @@ import java.util.Map;
 import java.util.Stack;
 
 public class CRDT_TREE {
-
 
     public String name;
     public Node root;
@@ -15,8 +15,6 @@ public class CRDT_TREE {
     private Stack<Operation> undoStack = new Stack<>();
     private Stack<Operation> redoStack = new Stack<>();
 
-
-
     public CRDT_TREE(String name) {
         ID owner = new ID("allFather", 0);
         this.root = new Node(owner, "", null);
@@ -25,12 +23,11 @@ public class CRDT_TREE {
         this.name = name;
     }
 
-
     //local ops
-    private Node localInsertOne(int position, String text,long timeStamp) {
-        String user =this.name;
+    private Node localInsertOne(int position, String text, long timeStamp) {
+        String user = this.name;
         ID id = new ID(user, timeStamp);
-        Node parent ;
+        Node parent;
         if (position == 0) {
             parent = root;
         } else {
@@ -40,18 +37,20 @@ public class CRDT_TREE {
         Node newNode = new Node(id, text, parent.id);
         parent.children.add(newNode.id);;
         idNodeMap.put(id, newNode);
-        nodeList.add(position,newNode);
+        nodeList.add(position, newNode);
         return newNode;
     }
 
-    public Node[] localInsert(int position, String text,long timeStamp){
-        String user =this.name;
+    public Node[] localInsert(int position, String text, long timeStamp) {
+        String user = this.name;
         String[] chars = splitToCharArray(text);
-        if (chars.length == 0) return null;
+        if (chars.length == 0) {
+            return null;
+        }
         Node[] nodes = new Node[chars.length];
 
         // Insert the first character
-        Node parent = localInsertOne(position, chars[0],timeStamp);
+        Node parent = localInsertOne(position, chars[0], timeStamp);
         nodes[0] = parent;
         // Insert the rest as children of the previous node
         for (int i = 1; i < chars.length; i++) {
@@ -62,28 +61,28 @@ public class CRDT_TREE {
             nodes[i] = newNode;
             parent.children.add(newNode.id);
             idNodeMap.put(id, newNode);
-            nodeList.add(position,newNode);
+            nodeList.add(position, newNode);
             parent = newNode; // Chain the new node as the next parent
         }
 
-        undoStack.push(new Operation(Operation.Type.DELETE,nodes));
+        undoStack.push(new Operation(Operation.Type.DELETE, nodes));
         redoStack.clear(); // New operation invalidates redo history
         return nodes;
     }
 
-    public Node[] localDeleteOne(int position){
+    public Node[] localDeleteOne(int position) {
         ID id = getParentByPosition(position);
         Node node = idNodeMap.get(id);
         node.isDeleted = true;
         Node[] nodes = new Node[1];
         nodes[0] = node;
-        undoStack.push(new Operation(Operation.Type.INSERT,nodes));
+        undoStack.push(new Operation(Operation.Type.INSERT, nodes));
         redoStack.clear();
         return nodes;
     }
 
     // remote ops
-    public void remoteInsert(ID parentId, String text, ID id){
+    public void remoteInsert(ID parentId, String text, ID id) {
         if (idNodeMap.containsKey(id)) {
             return;
         }
@@ -99,7 +98,7 @@ public class CRDT_TREE {
         nodeList.add(newNode);
     }
 
-    public void remoteDelete(ID id){
+    public void remoteDelete(ID id) {
         if (!idNodeMap.containsKey(id)) {
             throw new IllegalArgumentException("Node not found for remote delete: " + id);
         }
@@ -108,12 +107,15 @@ public class CRDT_TREE {
     }
 
     public void remoteUpdate(Operation op) {
-        if (op == null || op.nodes == null) return;
+        if (op == null || op.nodes == null) {
+            return;
+        }
 
         if (op.type == Operation.Type.INSERT) {
             for (Node node : op.nodes) {
-                if (idNodeMap.containsKey(node.id)) continue; // Already inserted
-
+                if (idNodeMap.containsKey(node.id)) {
+                    continue; // Already inserted
+                }
                 Node parent = idNodeMap.get(node.parentId);
                 if (parent == null) {
                     System.err.println("Missing parent for remote insert: " + node.parentId);
@@ -137,11 +139,11 @@ public class CRDT_TREE {
         }
     }
 
-
-
     //undo and redo
     public Node[] undo() {
-        if (undoStack.isEmpty()) return null;
+        if (undoStack.isEmpty()) {
+            return null;
+        }
 
         Operation op = undoStack.pop();
         Node[] affectedNodes = new Node[op.nodes.length];
@@ -168,7 +170,9 @@ public class CRDT_TREE {
     }
 
     public Node[] redo() {
-        if (redoStack.isEmpty()) return null;
+        if (redoStack.isEmpty()) {
+            return null;
+        }
 
         Operation op = redoStack.pop();
         Node[] affectedNodes = new Node[op.nodes.length];
@@ -192,10 +196,7 @@ public class CRDT_TREE {
         return affectedNodes;
     }
 
-
-
     // helper funcitons
-
     private String[] splitToCharArray(String input) {
         String[] result = new String[input.length()];
         for (int i = 0; i < input.length(); i++) {
@@ -204,13 +205,14 @@ public class CRDT_TREE {
         return result;
     }
 
-
     private ID getParentByPosition(Node node, int position, Counter counter) {
-        if (node == null) return null;
+        if (node == null) {
+            return null;
+        }
 
         if (!node.isDeleted) {
             counter.value++;
-            if (counter.value-1 == position) {
+            if (counter.value - 1 == position) {
                 return node.id;
             }
         }
@@ -225,7 +227,9 @@ public class CRDT_TREE {
         for (ID childID : node.children) {
             Node child = idNodeMap.get(childID);
             ID result = getParentByPosition(child, position, counter);
-            if (result != null) return result;
+            if (result != null) {
+                return result;
+            }
         }
 
         return null;
@@ -237,9 +241,9 @@ public class CRDT_TREE {
 
     // Simple counter class
     private static class Counter {
+
         int value = 0;
     }
-
 
     // printing
     public void printTree() {
@@ -249,14 +253,16 @@ public class CRDT_TREE {
     }
 
     private void printTree(Node node) {
-        if (node == null) return;
+        if (node == null) {
+            return;
+        }
 
         String idStr = "(" + node.id.user + "," + node.id.timeStamp + ")";
         String content = node.content;
         String isDeleted = node.isDeleted ? "Yes" : "No";
 
-        String parentStr = (node.parentId == null) ? "null" :
-                "(" + node.parentId.user + "," + node.parentId.timeStamp + ")";
+        String parentStr = (node.parentId == null) ? "null"
+                : "(" + node.parentId.user + "," + node.parentId.timeStamp + ")";
 
         StringBuilder childrenStr = new StringBuilder();
         for (ID childID : node.children) {
@@ -279,11 +285,9 @@ public class CRDT_TREE {
 
         // Start with the current node's content
         StringBuilder sb = new StringBuilder();
-        if (!node.isDeleted)
-        {
+        if (!node.isDeleted) {
             sb.append(node.content);
         }
-
 
         // Sort children as specified
         ArrayList<ID> children = node.children;
@@ -308,14 +312,11 @@ public class CRDT_TREE {
         return getDocument(root);
     }
 
-
-    public void printList()
-    {
+    public void printList() {
         for (int i = 0; i < nodeList.size(); i++) {
             Node node = nodeList.get(i);
-            System.out.println(i + " " + node.content+ " " + node.isDeleted);
+            System.out.println(i + " " + node.content + " " + node.isDeleted);
         }
     }
-
 
 }

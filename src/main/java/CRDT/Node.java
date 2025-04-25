@@ -1,6 +1,9 @@
+package CRDT;
+
 import java.util.ArrayList;
 
 public class Node {
+
     public ID id;
     public String content;
     public boolean isDeleted;

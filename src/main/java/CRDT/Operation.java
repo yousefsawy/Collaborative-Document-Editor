@@ -1,5 +1,10 @@
+package CRDT;
+
 public class Operation {
-    public enum Type { INSERT, DELETE }
+
+    public enum Type {
+        INSERT, DELETE
+    }
 
     public Type type;
     Node[] nodes;
