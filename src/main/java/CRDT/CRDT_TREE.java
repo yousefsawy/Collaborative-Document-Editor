@@ -107,93 +107,98 @@ public class CRDT_TREE {
     }
 
     public void remoteUpdate(Operation op) {
-        if (op == null || op.nodes == null) {
+        if (op == null || op.ids == null) {
             return;
         }
 
         if (op.type == Operation.Type.INSERT) {
-            for (Node node : op.nodes) {
-                if (idNodeMap.containsKey(node.id)) {
-                    continue; // Already inserted
+            for (ID id : op.ids) {
+                if (idNodeMap.containsKey(id)) {
+                    Node node = idNodeMap.get(id);
+                    node.isDeleted = false; // In case it was deleted
+                } else {
+                    System.err.println("Missing node for remote insert: " + id);
+                    // If needed: you could buffer missing operations for retry
                 }
-                Node parent = idNodeMap.get(node.parentId);
-                if (parent == null) {
-                    System.err.println("Missing parent for remote insert: " + node.parentId);
-                    continue; // Optionally: queue it for retry
-                }
-
-                // Add node
-                parent.children.add(node.id);
-                idNodeMap.put(node.id, node);
-                nodeList.add(node); // Optional: preserve linear history
             }
         } else if (op.type == Operation.Type.DELETE) {
-            for (Node node : op.nodes) {
-                Node existing = idNodeMap.get(node.id);
-                if (existing != null) {
-                    existing.isDeleted = true;
+            for (ID id : op.ids) {
+                Node node = idNodeMap.get(id);
+                if (node != null) {
+                    node.isDeleted = true;
                 } else {
-                    System.err.println("Tried to delete missing node: " + node.id);
+                    System.err.println("Tried to delete missing node: " + id);
                 }
             }
         }
     }
 
-    //undo and redo
-    public Node[] undo() {
+    public Operation undo() {
         if (undoStack.isEmpty()) {
             return null;
         }
 
         Operation op = undoStack.pop();
-        Node[] affectedNodes = new Node[op.nodes.length];
 
         if (op.type == Operation.Type.INSERT) {
-            // Redo insert means re-inserting previously deleted nodes
-            for (int i = 0; i < op.nodes.length; i++) {
-                Node node = op.nodes[i];
-                node.isDeleted = false;
-                affectedNodes[i] = node;
+            // Undo insert → delete the nodes
+            for (ID id : op.ids) {
+                Node node = idNodeMap.get(id);
+                if (node != null) {
+                    node.isDeleted = true;
+                }
             }
-            redoStack.push(new Operation(Operation.Type.DELETE, op.nodes));
+            Operation reverse = new Operation(Operation.Type.DELETE, op.ids);
+            redoStack.push(reverse);
+            return reverse;
         } else if (op.type == Operation.Type.DELETE) {
-            // Redo delete means marking inserted nodes as deleted again
-            for (int i = 0; i < op.nodes.length; i++) {
-                Node node = op.nodes[i];
-                node.isDeleted = true;
-                affectedNodes[i] = node;
+            // Undo delete → undelete the nodes
+            for (ID id : op.ids) {
+                Node node = idNodeMap.get(id);
+                if (node != null) {
+                    node.isDeleted = false;
+                }
             }
-            redoStack.push(new Operation(Operation.Type.INSERT, op.nodes));
+            Operation reverse = new Operation(Operation.Type.INSERT, op.ids);
+            redoStack.push(reverse);
+            return reverse;
         }
 
-        return affectedNodes;
+        return null;
     }
 
-    public Node[] redo() {
+    public Operation redo() {
         if (redoStack.isEmpty()) {
             return null;
         }
 
         Operation op = redoStack.pop();
-        Node[] affectedNodes = new Node[op.nodes.length];
 
         if (op.type == Operation.Type.INSERT) {
-            for (int i = 0; i < op.nodes.length; i++) {
-                Node node = op.nodes[i];
-                node.isDeleted = false;
-                affectedNodes[i] = node;
+            // Redo insert → undelete nodes
+            for (ID id : op.ids) {
+                Node node = idNodeMap.get(id);
+                if (node != null) {
+                    node.isDeleted = false;
+                }
             }
-            undoStack.push(new Operation(Operation.Type.DELETE, op.nodes));
+            Operation reverse = new Operation(Operation.Type.DELETE, op.ids);
+            undoStack.push(reverse);
+            return reverse;
         } else if (op.type == Operation.Type.DELETE) {
-            for (int i = 0; i < op.nodes.length; i++) {
-                Node node = op.nodes[i];
-                node.isDeleted = true;
-                affectedNodes[i] = node;
+            // Redo delete → delete nodes
+            for (ID id : op.ids) {
+                Node node = idNodeMap.get(id);
+                if (node != null) {
+                    node.isDeleted = true;
+                }
             }
-            undoStack.push(new Operation(Operation.Type.INSERT, op.nodes));
+            Operation reverse = new Operation(Operation.Type.INSERT, op.ids);
+            undoStack.push(reverse);
+            return reverse;
         }
 
-        return affectedNodes;
+        return null;
     }
 
     // helper funcitons

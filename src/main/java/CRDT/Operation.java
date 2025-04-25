@@ -7,10 +7,10 @@ public class Operation {
     }
 
     public Type type;
-    Node[] nodes;
+    ID[] ids;
 
-    public Operation(Type type, Node[] nodes) {
+    public Operation(Type type, ID[] ids) {
         this.type = type;
-        this.nodes = nodes;
+        this.ids = ids;
     }
 }
