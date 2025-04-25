@@ -35,50 +35,60 @@ public class CRDT_TREE {
             parent = idNodeMap.get(parentId);
         }
         Node newNode = new Node(id, text, parent.id);
-        parent.children.add(newNode.id);;
+        parent.children.add(newNode.id);
         idNodeMap.put(id, newNode);
         nodeList.add(position, newNode);
         return newNode;
     }
 
-    public Node[] localInsert(int position, String text, long timeStamp) {
+    // Insert multiple characters
+    public ID[] localInsert(int position, String text, long timeStamp) {
         String user = this.name;
         String[] chars = splitToCharArray(text);
         if (chars.length == 0) {
             return null;
         }
-        Node[] nodes = new Node[chars.length];
+
+        ID[] insertedIds = new ID[chars.length];
 
         // Insert the first character
         Node parent = localInsertOne(position, chars[0], timeStamp);
-        nodes[0] = parent;
+        insertedIds[0] = parent.id;
+
         // Insert the rest as children of the previous node
         for (int i = 1; i < chars.length; i++) {
             timeStamp++; // Increment timestamp for uniqueness
             position++;
+
             ID id = new ID(user, timeStamp);
             Node newNode = new Node(id, chars[i], parent.id);
-            nodes[i] = newNode;
+
             parent.children.add(newNode.id);
             idNodeMap.put(id, newNode);
             nodeList.add(position, newNode);
+
+            insertedIds[i] = id;
             parent = newNode; // Chain the new node as the next parent
         }
 
-        undoStack.push(new Operation(Operation.Type.DELETE, nodes));
+        undoStack.push(new Operation(Operation.Type.DELETE, insertedIds));
         redoStack.clear(); // New operation invalidates redo history
-        return nodes;
+
+        return insertedIds;
     }
 
-    public Node[] localDeleteOne(int position) {
+    // Delete one character
+    public ID[] localDeleteOne(int position) {
         ID id = getParentByPosition(position);
         Node node = idNodeMap.get(id);
         node.isDeleted = true;
-        Node[] nodes = new Node[1];
-        nodes[0] = node;
-        undoStack.push(new Operation(Operation.Type.INSERT, nodes));
+
+        ID[] deletedIds = new ID[]{id};
+
+        undoStack.push(new Operation(Operation.Type.INSERT, deletedIds));
         redoStack.clear();
-        return nodes;
+
+        return deletedIds;
     }
 
     // remote ops
@@ -202,6 +212,10 @@ public class CRDT_TREE {
     }
 
     // helper funcitons
+    public Node getNodeById(ID id) {
+        return idNodeMap.get(id);
+    }
+
     private String[] splitToCharArray(String input) {
         String[] result = new String[input.length()];
         for (int i = 0; i < input.length(); i++) {
