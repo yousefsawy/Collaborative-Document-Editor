@@ -1,16 +1,20 @@
-package CRDT;
+
 
 public class Operation {
 
     public enum Type {
-        INSERT, DELETE, UNDO, REDO
+        INSERT, DELETE,UNDO,REDO
     }
 
     public Type type;
-    ID[] ids;
+    public Node[] nodes;
+    public String user;
 
-    public Operation(Type type, ID[] ids) {
+
+    public Operation(Type type, Node[] nodes, String user) {
         this.type = type;
-        this.ids = ids;
+        this.nodes = nodes;
+        this.user = user;
     }
+
 }
