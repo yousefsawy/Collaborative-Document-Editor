@@ -1,4 +1,4 @@
-package org.example.texteditor;
+package org.example.texteditor.JavaFxControllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -6,7 +6,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.List;
 
-public class MainController {
+public class EditController {
 
     @FXML
     private VBox usersList;

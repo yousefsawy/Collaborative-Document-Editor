@@ -1,4 +1,4 @@
-package com.DocumentCollaborator.DocumentCollaborator;
+package com.DocumentCollaborator.DocumentCollaborator.Config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

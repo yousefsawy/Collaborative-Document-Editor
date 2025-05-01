@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.texteditor.JavaFxControllers.CreateDocumentController">
+    <top>
+        <VBox spacing="10.0" alignment="CENTER">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <!-- Welcome Section -->
+            <Label fx:id="welcomeLabel" text="Welcome, [Username]" />
+
+            <!-- Document Title Input -->
+            <Label text="Document Title:"/>
+            <TextField fx:id="documentTitleField" promptText="Enter document title"/>
+
+            <!-- Large Text Area for Document Content -->
+            <Label text="Document Content:"/>
+            <TextArea fx:id="documentContentArea" promptText="Start typing your document content here..." wrapText="true" prefRowCount="10" prefColumnCount="50"/>
+
+            <!-- Button to Import Text File -->
+            <Button fx:id="importFileButton" text="Import Text File" onAction="#handleImportFile"/>
+
+            <!-- Button to Create Document -->
+            <Button fx:id="createDocumentButton" text="Create Document" onAction="#handleCreateDocument"/>
+        </VBox>
+    </top>
+</BorderPane>
