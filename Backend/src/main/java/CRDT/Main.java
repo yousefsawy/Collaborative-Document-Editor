@@ -1,20 +1,44 @@
-package CRDT;
+import java.util.HashMap;
 
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
-        CRDT_TREE doc1 = new CRDT_TREE("1");
-        CRDT_TREE doc2 = new CRDT_TREE("2");
+        CRDT_TREE doc1 = new CRDT_TREE("1","omar");
+        CRDT_TREE doc2 = new CRDT_TREE("1","anas");
 
-        ID[] ids = doc1.localInsert(0, "omar", 100);
-        Node[] nodes = new Node[ids.length];
-        for (int i = 0; i < ids.length; i++) {
-            nodes[i] = doc1.getNodeById(ids[i]);
-            doc2.remoteInsert(nodes[i].parentId, nodes[i].content, nodes[i].id);
-        }
+        Operation op1 = doc1.localInsert(0, "omar", 100);
 
+        doc2.remoteUpdate(op1);
+
+        Operation op2 = doc1.undo();
+        doc2.remoteUpdate(op2);
+
+
+        Operation op3 = doc1.redo();
+        doc2.remoteUpdate(op3);
+
+        Operation op4 = doc1.undo();
+        doc2.remoteUpdate(op4);
+        Operation op5 = doc2.localInsert(0, "anas", 1000);
+        doc1.remoteUpdate(op5);
+
+        Node[] nodes = doc1.sendTree();
+        CRDT_TREE doc3 = new CRDT_TREE("1","sawy",nodes);
+        Operation op6 = doc3.localInsert(0, "sawy", 10000);
+
+        doc2.remoteUpdate(op6);
+        doc1.remoteUpdate(op6);
         doc1.printTree();
         doc2.printTree();
-        System.out.println(doc1.getDocument());
+        doc3.printTree();
+
+        System.out.println("doc1: "+doc1.getDocument());
+        System.out.println("doc2: "+doc2.getDocument());
+        System.out.println("doc3: "+doc3.getDocument());
+
     }
+
+
+
+
 }
