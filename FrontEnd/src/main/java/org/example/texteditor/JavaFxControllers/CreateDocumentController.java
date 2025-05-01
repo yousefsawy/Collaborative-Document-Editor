@@ -5,6 +5,11 @@ import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.example.texteditor.DTO.DocumentCreateRequest;
+import org.example.texteditor.DTO.DocumentCreateResponse;
+import org.example.texteditor.WebSocketHandler.WebSocketHandler;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,6 +17,10 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class CreateDocumentController {
+    static final String BASE_URL="http://localhost:8080/";
+    RestTemplate restTemplate = new RestTemplate();
+    WebSocketHandler webSocketHandler = new WebSocketHandler();
+    private String username;
 
     @FXML
     private TextField documentTitleField;
@@ -30,6 +39,7 @@ public class CreateDocumentController {
 
     // Set username dynamically from another part of the application
     public void setWelcomeUsername(String username) {
+        this.username = username;
         welcomeLabel.setText("Welcome, " + username);
     }
 
@@ -70,7 +80,39 @@ public class CreateDocumentController {
         System.out.println("Document Created with Title: " + title);
         System.out.println("Document Content: " + content);
 
-        // You can send the data to a service or handle it as required
+        try {
+            DocumentCreateRequest request = new DocumentCreateRequest(title,username,content);
+
+            ResponseEntity<DocumentCreateResponse> response = restTemplate.postForEntity(
+                    BASE_URL + "create", request, DocumentCreateResponse.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                DocumentCreateResponse body = response.getBody();
+                if (body == null || body.getDocumentId() == null) {
+                    showError("Creation Failed", "Server returned an invalid response.");
+                    return;
+                }
+
+                // Show success
+                Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                successAlert.setTitle("Success");
+                successAlert.setHeaderText("Document Created");
+                successAlert.setContentText("Document ID: " + body.getDocumentId());
+                successAlert.showAndWait();
+                System.out.println("Document Created with ID: " + body.getDocumentId());
+                webSocketHandler.connectToDocument(body.getDocumentId());
+
+            } else if (response.getStatusCode().is4xxClientError()) {
+                showError("Client Error", "Check your request. Something is wrong on your end.");
+            } else if (response.getStatusCode().is5xxServerError()) {
+                showError("Server Error", "Server encountered a problem. Try again later.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Connection Error", "Could not connect to the server.");
+        }
     }
 
     // Helper method to show error dialogs

@@ -8,7 +8,6 @@ public class Operation {
 
     public Type type;
     ID[] ids;
-    string userId;
 
     public Operation(Type type, ID[] ids) {
         this.type = type;

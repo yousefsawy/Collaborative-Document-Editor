@@ -7,9 +7,13 @@ module org.example.texteditor {
     requires org.kordamp.bootstrapfx.core;
     requires spring.websocket;
     requires spring.messaging;
+    requires spring.web;
+    requires static lombok;
 
     opens org.example.texteditor to javafx.fxml;
     exports org.example.texteditor;
     exports org.example.texteditor.JavaFxControllers;
     opens org.example.texteditor.JavaFxControllers to javafx.fxml;
+    exports org.example.texteditor.DTO;
+
 }

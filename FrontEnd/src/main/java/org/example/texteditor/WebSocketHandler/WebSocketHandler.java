@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import CRDT.Node;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -61,29 +62,28 @@ public class WebSocketHandler extends StompSessionHandlerAdapter {
 
 
 
-    //    public void subscribeToDocument(String documentId){
-//        if (stompSession != null && stompSession.isConnected()) {
-//            // Subscribe to the poll result topic
-//            stompSession.subscribe("/topic/pollResult/" + documentId, new StompFrameHandler() {
-//
-//                @Override
-//                public Type getPayloadType(StompHeaders headers) {
-//                    return PollResult.class;  // Expected response type is PollResult
-//                }
-//
-//                @Override
-//                public void handleFrame(StompHeaders headers, Object payload) {
-//                    // Handle the incoming poll result message
-//                    PollResult pollResult = (PollResult) payload;
-//                    printPollResult(pollResult);
-//                }
-//            });
-//            System.out.println("Subscribed to poll results for poll ID: " + documentId);
-//        } else {
-//            System.out.println("Failed to subscribe. WebSocket session is not connected.");
-//        }
-//
-//    }
+        public void connectToDocument(String documentId){
+            if (stompSession != null && stompSession.isConnected()) {
+                StompSession.Subscription documentSubscription = stompSession.subscribe("/topic/connect/" + documentId, new StompFrameHandler() {
+
+                    @Override
+                    public Type getPayloadType(StompHeaders headers) {
+                        return Node[].class;  // Expected response type is PollResult
+                    }
+
+                    @Override
+                    public void handleFrame(StompHeaders headers, Object payload) {
+                        Node[] nodes = (Node[]) payload;
+                        System.out.println(nodes.length);
+                    }
+                });
+                documentSubscription.unsubscribe();
+                System.out.println("Subscribed to Document: " + documentId);
+            } else {
+                System.out.println("Failed to subscribe. WebSocket session is not connected.");
+            }
+        }
+
     public void close(){
         this.stompSession.disconnect();
     }
