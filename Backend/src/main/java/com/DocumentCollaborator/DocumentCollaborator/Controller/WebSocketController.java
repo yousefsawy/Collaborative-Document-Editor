@@ -6,7 +6,10 @@ import com.DocumentCollaborator.DocumentCollaborator.Service.DocumentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
@@ -14,24 +17,29 @@ import org.springframework.stereotype.Controller;
 public class WebSocketController {
     @Autowired
     private final DocumentService documentService;
+
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     public WebSocketController(DocumentService documentService) {
         this.documentService = documentService;
     }
 
-
-    // Handles operations, Should return an operation object
+    // Method 1: Using @SendTo annotation
     @MessageMapping("/operation/{documentId}")
     @SendTo("/topic/operation/{documentId}")
-    public String handleOperation(String message, @DestinationVariable String documentId) {
-        System.out.println("Received message in room " + documentId + ": " + message);
-        return message;
+    public Operation handleOperation(@DestinationVariable String documentId, @Payload Operation Op) {
+        documentService.handleDocumentOperation(documentId, Op);
+        return Op;
     }
 
-    //Handles connections to document, Should return nodes to build tree
+    // CALLED FIRST TIME A USER CONNECTS
     @MessageMapping("/connect/{documentId}")
-    @SendToUser("/topic/connect/{documentId}")
+    @SendToUser("/response/connect")
     public Node[] handleConnect(@DestinationVariable String documentId) {
-        System.out.println("Received message in room " + documentId);
+        System.out.println("Sending response: ");
         return documentService.getDocumentNodes(documentId);
     }
+
 }

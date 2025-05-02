@@ -1,6 +1,9 @@
 package org.example.texteditor.JavaFxControllers;
 
+import CRDT.Node;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
@@ -10,6 +13,7 @@ import org.example.texteditor.DTO.DocumentCreateResponse;
 import org.example.texteditor.WebSocketHandler.WebSocketHandler;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClientException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,9 +22,10 @@ import java.io.IOException;
 
 public class CreateDocumentController {
     static final String BASE_URL="http://localhost:8080/";
-    RestTemplate restTemplate = new RestTemplate();
-    WebSocketHandler webSocketHandler = new WebSocketHandler();
+    RestTemplate restTemplate;
     private String username;
+
+    Node[] nodes;
 
     @FXML
     private TextField documentTitleField;
@@ -39,6 +44,7 @@ public class CreateDocumentController {
 
     // Set username dynamically from another part of the application
     public void setWelcomeUsername(String username) {
+        restTemplate = new RestTemplate();
         this.username = username;
         welcomeLabel.setText("Welcome, " + username);
     }
@@ -95,13 +101,21 @@ public class CreateDocumentController {
                 }
 
                 // Show success
-                Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-                successAlert.setTitle("Success");
-                successAlert.setHeaderText("Document Created");
-                successAlert.setContentText("Document ID: " + body.getDocumentId());
-                successAlert.showAndWait();
                 System.out.println("Document Created with ID: " + body.getDocumentId());
+
+                WebSocketHandler webSocketHandler = new WebSocketHandler();
+                webSocketHandler.connectToWebSocket();
                 webSocketHandler.connectToDocument(body.getDocumentId());
+
+                nodes = webSocketHandler.getNodes();
+
+                while(nodes == null)
+                {
+                    nodes = webSocketHandler.getNodes();
+                }
+
+                openEditDocumentForm();
+
 
             } else if (response.getStatusCode().is4xxClientError()) {
                 showError("Client Error", "Check your request. Something is wrong on your end.");
@@ -114,6 +128,27 @@ public class CreateDocumentController {
             showError("Connection Error", "Could not connect to the server.");
         }
     }
+
+    private void openEditDocumentForm() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/texteditor/edit-view.fxml"));
+            Scene editScene = new Scene(loader.load());
+
+            EditController editController = loader.getController();
+            editController.initialize(nodes);
+
+            // Get the current window and set the new scene
+            Stage stage = (Stage) createDocumentButton.getScene().getWindow();
+            stage.setScene(editScene);
+            stage.setTitle("Edit Document");
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Error", "Error opening Edit Document form.");
+        }
+    }
+
 
     // Helper method to show error dialogs
     private void showError(String header, String content) {

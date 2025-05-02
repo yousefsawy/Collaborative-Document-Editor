@@ -1,9 +1,11 @@
 package com.DocumentCollaborator.DocumentCollaborator.Controller;
+import CRDT.Node;
 import com.DocumentCollaborator.DocumentCollaborator.DTO.DocumentCreateRequest;
 import com.DocumentCollaborator.DocumentCollaborator.DTO.DocumentCreateResponse;
 import com.DocumentCollaborator.DocumentCollaborator.Model.Document;
 import com.DocumentCollaborator.DocumentCollaborator.Service.DocumentService;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.server.ResponseStatusException;
@@ -12,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 public class DocumentRestController {
     private final DocumentService documentService;
+
     public DocumentRestController(DocumentService documentService) {
         this.documentService = documentService;
     }
@@ -33,11 +36,10 @@ public class DocumentRestController {
 
     // TESTING PURPOSES ONLY SHOULDN'T BE CALLED ON CLIENT SIDE
     @GetMapping("/{documentId}")
-    public Document getDocument(@PathVariable String documentId){
+    public Node[] getDocument(@PathVariable String documentId) {
         System.out.println("DocumentId: " + documentId);
-        return documentService.getDocument(documentId);
+        return documentService.getDocumentNodes(documentId);
     }
 }
-
 
 

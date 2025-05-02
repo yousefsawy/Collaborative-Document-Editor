@@ -1,7 +1,17 @@
+package CRDT;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Node {
+@Getter
+@Setter
+@NoArgsConstructor
+public class Node implements Serializable {
 
     public ID id;
     public String content;

@@ -2,6 +2,7 @@ package com.DocumentCollaborator.DocumentCollaborator.Service;
 import java.util.concurrent.ConcurrentHashMap;
 
 import CRDT.Node;
+import CRDT.Operation;
 import com.DocumentCollaborator.DocumentCollaborator.DTO.DocumentCreateResponse;
 import com.DocumentCollaborator.DocumentCollaborator.Model.Document;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,6 @@ public class DocumentService {
 
 
     public DocumentCreateResponse createDocument(String title, String username, String content){
-
         Document doc=new Document(title, username, content);
         setDocument(doc);
         return new DocumentCreateResponse(doc.getDocumentId(), doc.getDocumentName(), doc.getEditorId(), doc.getViewerId(), doc.getOwnerId());
@@ -47,7 +47,9 @@ public class DocumentService {
     public Node[] getDocumentNodes(String documentId){
         return getDocument(documentId).getDocumentNodes();
     }
-
+    public void handleDocumentOperation(String documentId, Operation operation){
+        systemDocuments.get(documentId).handleOperation(operation);
+    }
     private void setDocument(Document doc)
     {
         if(systemDocuments.putIfAbsent(doc.getDocumentId(), doc) == null) {
@@ -55,4 +57,5 @@ public class DocumentService {
             ViewerIds.put(doc.getViewerId(), doc.getDocumentId());
         };
     }
+
 }

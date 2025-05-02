@@ -1,17 +1,26 @@
 package org.example.texteditor.JavaFxControllers;
 
+import CRDT.CRDT_TREE;
+import CRDT.Node;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 
 import java.util.List;
 
 public class EditController {
 
+    CRDT_TREE tree;
+
     @FXML
     private VBox usersList;
 
-    public void initialize() {
+    @FXML
+    private TextArea documentContentArea;
+
+
+    public void initialize(Node[] nodes) {
         // Example: Fetch dynamic list of users
         List<String> users = fetchUsers();
 
@@ -23,6 +32,8 @@ public class EditController {
             userLabel.setOnMouseClicked(event -> handleUserSelection(user));
             usersList.getChildren().add(userLabel);
         }
+        tree = new CRDT_TREE("Doc", "UserName", nodes);
+        documentContentArea.setText(tree.getDocument());
     }
 
     private List<String> fetchUsers() {
