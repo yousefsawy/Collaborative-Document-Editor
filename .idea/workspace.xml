@@ -5,22 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e8d66364-a5a7-41c0-b6fa-c4dc137e456c" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/CRDT/CRDT_TREE.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/CRDT/CRDT_TREE.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/CRDT/ID.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/CRDT/ID.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Node.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Operation.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Operation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Controller/DocumentRestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Controller/DocumentRestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Controller/WebSocketController.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Controller/WebSocketController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Model/Document.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Model/Document.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Model/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Service/DocumentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Service/DocumentService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FrontEnd/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/CRDT_TREE.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/CRDT_TREE.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/ID.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/ID.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Node.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Operation.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Operation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/module-info.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/module-info.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/JavaFxControllers/CreateDocumentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/JavaFxControllers/CreateDocumentController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/JavaFxControllers/EditController.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/JavaFxControllers/EditController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/JavaFxControllers/LoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/JavaFxControllers/LoginController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/WebSocketHandler/WebSocketHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/WebSocketHandler/WebSocketHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/resources/org/example/texteditor/edit-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/resources/org/example/texteditor/edit-view.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,26 +44,18 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "sawy",
+    "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/youse/Documents/APT/Collaborative-Document-Editor",
+    "last_opened_file_path": "D:/Projects/APT/Collaborative-Document-Editor/FrontEnd",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager">
-    <configuration default="true" type="JetRunConfigurationType">
-      <module name="Collaborative-Document-Editor" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.23774.435" />
-        <option value="bundled-js-predefined-d6986cc7102b-f27c65a3e318-JavaScript-IU-251.23774.435" />
+        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.24978.46" />
+        <option value="bundled-js-predefined-d6986cc7102b-76f8388c3a79-JavaScript-IU-243.24978.46" />
       </set>
     </attachedChunks>
   </component>
@@ -81,7 +68,11 @@
       <option name="presentableId" value="Default" />
       <updated>1745943228013</updated>
       <workItem from="1746138033184" duration="17000" />
+      <workItem from="1746221539222" duration="19000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
 </project>

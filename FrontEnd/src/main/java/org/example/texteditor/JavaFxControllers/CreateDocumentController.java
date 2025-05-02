@@ -12,14 +12,17 @@ import javafx.stage.Stage;
 import org.example.texteditor.DTO.DocumentCreateRequest;
 import org.example.texteditor.DTO.DocumentCreateResponse;
 import org.example.texteditor.WebSocketHandler.WebSocketHandler;
+import org.example.texteditor.models.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.client.RestClientException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class CreateDocumentController {
     static final String BASE_URL="http://localhost:8080/";
@@ -95,7 +98,7 @@ public class CreateDocumentController {
         System.out.println("Document Content: " + content);
 
         try {
-            DocumentCreateRequest request = new DocumentCreateRequest(title,username,content);
+            DocumentCreateRequest request = new DocumentCreateRequest(title, username, content);
 
             ResponseEntity<DocumentCreateResponse> response = restTemplate.postForEntity(
                     BASE_URL + "create", request, DocumentCreateResponse.class
@@ -113,15 +116,13 @@ public class CreateDocumentController {
                 this.documentId = body.getDocumentId();
                 this.userId = body.getUserId();
 
-
                 webSocketHandler = new WebSocketHandler();
                 webSocketHandler.connectToWebSocket();
-
-                webSocketHandler.connectToDocumentAsync(body.getDocumentId(), (Node[] receivedNodes) -> {
+                // Connect to the document and fetch nodes
+                webSocketHandler.connectToDocumentAsync(body.getDocumentId(), username, (Node[] receivedNodes) -> {
                     this.nodes = receivedNodes;
                     Platform.runLater(this::openEditDocumentForm);
                 });
-
 
             } else if (response.getStatusCode().is4xxClientError()) {
                 showError("Client Error", "Check your request. Something is wrong on your end.");

@@ -4,12 +4,32 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class User {
-    String userId;
-    String username;
+    private String userId;
+    private String username;
+    private String cursorColor;
+    private Integer cursorPosition;
 
-    public User(String username) {
+    public User(String username, Integer count) {
         this.userId = UUID.randomUUID().toString();
+        this.cursorColor = "rgb(" + (int) (Math.random() * 256) + "," + (int) (Math.random() * 256) + "," + (int) (Math.random() * 256) + ")";
+        this.cursorPosition = 0;
         this.username = username;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getCursorColor() {
+        return cursorColor;
+    }
+
+    public Integer getCursorPosition() {
+        return cursorPosition;
     }
 
     @Override

@@ -17,6 +17,7 @@ import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -29,8 +30,7 @@ public class WebSocketHandler {
     Node[] nodes;
     Operation operation;
     private Consumer<Node[]> onNodesReceived;
-    private Consumer<Operation> onOperationReceived;
-
+    private Consumer<String> onUserListUpdate;
 
     // Session handler with proper error tracking
     private class ConnectionHandler extends StompSessionHandlerAdapter {
@@ -74,6 +74,15 @@ public class WebSocketHandler {
                     if (onNodesReceived != null) {
                         onNodesReceived.accept(nodes);
                     }
+
+//                    // Log some details about the nodes
+//                    for (int i = 0; i < Math.min(nodes.length, 3); i++) {
+//                        Node node = nodes[i];
+//                        System.out.println("Node " + i + ": ID=" + node.getId() + ", Content=" + node.getContent());
+//                    }
+//                    if (nodes.length > 3) {
+//                        System.out.println("... and " + (nodes.length - 3) + " more nodes");
+//                    }
                 } else {
                     System.err.println("WEBSOCKET: Received non-Node array payload: " + payload.getClass());
                 }
@@ -85,7 +94,7 @@ public class WebSocketHandler {
     }
 
     // Custom STOMP handler specifically for Node array messages
-    private class OperationFrameHandler implements StompFrameHandler {
+    private class OperationHandler implements StompFrameHandler {
         @Override
         public Type getPayloadType(StompHeaders headers) {
             return Operation.class;
@@ -97,9 +106,7 @@ public class WebSocketHandler {
                 if (payload instanceof Operation) {
                     operation = (Operation) payload;
                     System.out.println("WEBSOCKET: Received Operation from server");
-                    if (onOperationReceived != null) {
-                        onOperationReceived.accept(operation);
-                    }
+
                 } else {
                     System.err.println("WEBSOCKET: Received non-Node array payload: " + payload.getClass());
                 }
@@ -153,7 +160,7 @@ public class WebSocketHandler {
         }
     }
 
-    public void sendDocumentOperation(Operation operation, String documentId) {
+    public void sendDocumentOperation(String message, String documentId) {
         if (stompSession == null || !stompSession.isConnected()) {
             System.err.println("WEBSOCKET: Cannot send message - not connected!");
             return;
@@ -163,7 +170,7 @@ public class WebSocketHandler {
             System.out.println("WEBSOCKET: Sending operation to document " + documentId);
 
             // Send message to server
-            stompSession.send("/app/connect/" + documentId, operation);
+            stompSession.send("/app/connect/" + documentId, message);
             System.out.println("WEBSOCKET: Message sent successfully");
 
         } catch (Exception e) {
@@ -172,32 +179,25 @@ public class WebSocketHandler {
         }
     }
 
-    public void connectToDocumentAsync(String documentId, Consumer<Node[]> connectCallback) {
+    public void connectToDocument(String documentId) {
         if (stompSession == null || !stompSession.isConnected()) {
             System.err.println("WEBSOCKET: Cannot subscribe - not connected");
             return;
         }
 
         try {
-            // Store the callback
-            this.onNodesReceived = connectCallback;
-            NodeArrayFrameHandler NodeframeHandler = new NodeArrayFrameHandler();
+            System.out.println("========================================");
+            System.out.println("WEBSOCKET: Subscribing to document: " + documentId);
 
-            // TODO - 1
-            //OperationFrameHandler OperationframeHanlder = new OperationFrameHandler();
+            // Use our dedicated handler for Node arrays
+            NodeArrayFrameHandler frameHandler = new NodeArrayFrameHandler();
 
-            // TODO: 1) Should Buffer the Operations
-            // TODO: 2) Wait Until Edit form is opened
-            // TODO: 3) Edit form should pass a callback to handle operations received from server
-            // TODO: 4) Edit form should call a function to send operations to server
+            // Subscribe to the topic with our Node-specific handler
+            StompSession.Subscription subscription = stompSession.subscribe(
+                    "/user/response/connect", frameHandler);
 
-            // Subscribe to the Node Receiver to Build the Tree
-            stompSession.subscribe("/user/response/connect", NodeframeHandler);
+            System.out.println("WEBSOCKET: Subscription ID: " + subscription.getSubscriptionId());
 
-            // TODO: 1
-            // stompSession.subscribe("/topic/operation/" + documentId, OperationframeHanlder);
-
-            // Trigger server-side connect logic
             stompSession.send("/app/connect/" + documentId, "");
 
         } catch (Exception e) {
@@ -206,37 +206,108 @@ public class WebSocketHandler {
         }
     }
 
-
-    // TODO N0. 4
-    public void sendDocumentOperation(String documentId, Operation operation) {
+    public void connectToDocumentAsync(String documentId, String username, Consumer<Node[]> callback) {
         if (stompSession == null || !stompSession.isConnected()) {
-            System.err.println("WEBSOCKET: not connected");
+            System.err.println("WEBSOCKET: Cannot subscribe - not connected");
             return;
         }
+    
         try {
-            // Trigger server-side operation login
-            stompSession.send("/app/operation/" + documentId, operation);
+            System.out.println("========================================");
+            System.out.println("WEBSOCKET: Subscribing to document: " + documentId);
+    
+            // Store the callback for nodes
+            this.onNodesReceived = callback;
+    
+            // Subscribe to the response topic for nodes
+            stompSession.subscribe("/user/response/connect", new NodeArrayFrameHandler());
+    
+            // Subscribe to the user list topic for real-time updates
+            stompSession.subscribe("/topic/users/" + documentId, new StompFrameHandler() {
+                @Override
+                public Type getPayloadType(StompHeaders headers) {
+                    return byte[].class;
+                }
+    
+                @Override
+                public void handleFrame(StompHeaders headers, Object payload) {
+                    try {
+                        String userListJson = new String((byte[]) payload, StandardCharsets.UTF_8);
+                        System.out.println("User list update received: " + userListJson);
+                        if (onUserListUpdate != null) {
+                            onUserListUpdate.accept(userListJson);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Failed to process user list update:");
+                        e.printStackTrace();
+                    }
+                }
+            });
+    
+            // Send a message to the server to connect and fetch the current user list
+            String payload = new ObjectMapper().writeValueAsString(username);
+            stompSession.send("/app/connect/" + documentId, payload);
+    
         } catch (Exception e) {
             System.err.println("WEBSOCKET: Error connecting to document: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // TODO - 3
-    public void receiveDocumentOperation(String documentId, Consumer<Operation> operationCallback) {
-        if (stompSession == null || !stompSession.isConnected()) {
-            System.err.println("WEBSOCKET: not connected");
-            return;
+    public void subscribeToTopic(String topic, Consumer<String> messageHandler) {
+        if (stompSession != null) {
+            stompSession.subscribe(topic, new StompFrameHandler() {
+                @Override
+                public Type getPayloadType(StompHeaders headers) {
+                    return byte[].class;
+                }
+
+                @Override
+                public void handleFrame(StompHeaders headers, Object payload) {
+                    try {
+                        String jsonString = new String((byte[]) payload, StandardCharsets.UTF_8);
+                        messageHandler.accept(jsonString);
+                    } catch (Exception e) {
+                        System.err.println("Failed to process WebSocket message:");
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
-        try {
-            // Trigger server-side operation login
-            OperationFrameHandler OperationframeHandler = new OperationFrameHandler();
-            this.onOperationReceived = operationCallback;
-            stompSession.subscribe("/topic/operation/" + documentId, OperationframeHandler);
-        } catch (Exception e) {
-            System.err.println("WEBSOCKET: Error connecting to document: " + e.getMessage());
-            e.printStackTrace();
+    }
+
+    public void sendMessage(String destination, String payload) {
+        if (stompSession != null && stompSession.isConnected()) {
+            stompSession.send(destination, payload);
+        } else {
+            System.err.println("WEBSOCKET: Cannot send message - not connected");
         }
+    }
+
+    public void subscribeToUserQueue(String destination, Consumer<String> messageHandler) {
+        if (stompSession != null) {
+            String userQueue = destination.startsWith("/queue/") ? destination : "/queue" + destination;
+            stompSession.subscribe(userQueue, new StompFrameHandler() {
+                @Override
+                public Type getPayloadType(StompHeaders headers) {
+                    return byte[].class; // Get raw payload
+                }
+
+                @Override
+                public void handleFrame(StompHeaders headers, Object payload) {
+                    try {
+                        String message = new String((byte[]) payload, StandardCharsets.UTF_8);
+                        messageHandler.accept(message);
+                    } catch (Exception e) {
+                        System.err.println("Failed to process queue message:");
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    }
+    public void setOnUserListUpdate(Consumer<String> onUserListUpdate) {
+        this.onUserListUpdate = onUserListUpdate;
     }
 
     public void close() {

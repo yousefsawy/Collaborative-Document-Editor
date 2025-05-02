@@ -1,5 +1,8 @@
 package com.DocumentCollaborator.DocumentCollaborator.Service;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import CRDT.Node;
 import CRDT.Operation;
@@ -62,10 +65,37 @@ public class DocumentService {
     }
 
     public User[] getDocumentUsers(String documentId) {
-        return getDocument(documentId).getUsers().values().toArray(new User[0]);
+        Map<String, User> userMap = getDocument(documentId).getUsers();
+        User[] users = userMap.values().toArray(new User[0]);
+        
+        // Deep verification
+        for (User user : users) {
+            System.out.printf("User Debug: id=%s, name=%s, color=%s, pos=%d%n",
+                    user.getUserId(),
+                    user.getUsername(),
+                    user.getCursorColor(),
+                    user.getCursorPosition());
+        }
+        
+        return users;
     }
 
     public void addUserToDocument(String documentId, String username){
         getDocument(documentId).addUser(username);
+    }
+
+    public void removeUserFromDocument(String documentId, String username){
+        getDocument(documentId).removeUser(username);
+    }
+
+    public void removeUserFromAllDocuments(String sessionId) {
+        systemDocuments.values().forEach(document -> document.removeUser(sessionId));
+    }
+
+    public List<String> getAffectedDocuments(String sessionId) {
+        return systemDocuments.values().stream()
+                .filter(document -> document.hasUser(sessionId))
+                .map(Document::getDocumentId)
+                .collect(Collectors.toList());
     }
 }
