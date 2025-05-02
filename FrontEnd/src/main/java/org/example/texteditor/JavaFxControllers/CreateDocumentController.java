@@ -1,10 +1,20 @@
 package org.example.texteditor.JavaFxControllers;
 
+import CRDT.Node;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.example.texteditor.DTO.DocumentCreateRequest;
+import org.example.texteditor.DTO.DocumentCreateResponse;
+import org.example.texteditor.WebSocketHandler.WebSocketHandler;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClientException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,6 +22,14 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class CreateDocumentController {
+    static final String BASE_URL="http://localhost:8080/";
+    RestTemplate restTemplate;
+    private String username;
+    private String userId;
+    WebSocketHandler webSocketHandler;
+    String documentId;
+
+    Node[] nodes;
 
     @FXML
     private TextField documentTitleField;
@@ -28,8 +46,14 @@ public class CreateDocumentController {
     @FXML
     private Label welcomeLabel;
 
-    // Set username dynamically from another part of the application
+    public void initialize(WebSocketHandler webSocketHandler, String username) {
+        this.webSocketHandler = webSocketHandler;
+        restTemplate = new RestTemplate();
+        setWelcomeUsername(username);
+    }
+
     public void setWelcomeUsername(String username) {
+        this.username = username;
         welcomeLabel.setText("Welcome, " + username);
     }
 
@@ -70,8 +94,67 @@ public class CreateDocumentController {
         System.out.println("Document Created with Title: " + title);
         System.out.println("Document Content: " + content);
 
-        // You can send the data to a service or handle it as required
+        try {
+            DocumentCreateRequest request = new DocumentCreateRequest(title,username,content);
+
+            ResponseEntity<DocumentCreateResponse> response = restTemplate.postForEntity(
+                    BASE_URL + "create", request, DocumentCreateResponse.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                DocumentCreateResponse body = response.getBody();
+                if (body == null || body.getDocumentId() == null) {
+                    showError("Creation Failed", "Server returned an invalid response.");
+                    return;
+                }
+
+                // Show success
+                System.out.println("Document Created with ID: " + body.getDocumentId());
+                this.documentId = body.getDocumentId();
+                this.userId = body.getUserId();
+
+
+                webSocketHandler = new WebSocketHandler();
+                webSocketHandler.connectToWebSocket();
+
+                webSocketHandler.connectToDocumentAsync(body.getDocumentId(), (Node[] receivedNodes) -> {
+                    this.nodes = receivedNodes;
+                    Platform.runLater(this::openEditDocumentForm);
+                });
+
+
+            } else if (response.getStatusCode().is4xxClientError()) {
+                showError("Client Error", "Check your request. Something is wrong on your end.");
+            } else if (response.getStatusCode().is5xxServerError()) {
+                showError("Server Error", "Server encountered a problem. Try again later.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Connection Error", "Could not connect to the server.");
+        }
     }
+
+    private void openEditDocumentForm() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/texteditor/edit-view.fxml"));
+            Scene editScene = new Scene(loader.load());
+
+            EditController editController = loader.getController();
+            editController.initialize(nodes, webSocketHandler, documentId, userId);
+
+            // Get the current window and set the new scene
+            Stage stage = (Stage) createDocumentButton.getScene().getWindow();
+            stage.setScene(editScene);
+            stage.setTitle("Edit Document");
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Error", "Error opening Edit Document form.");
+        }
+    }
+
 
     // Helper method to show error dialogs
     private void showError(String header, String content) {

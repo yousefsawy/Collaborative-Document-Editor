@@ -4,6 +4,8 @@ import CRDT.CRDT_TREE;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import CRDT.Node;
+import CRDT.Operation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,11 +52,18 @@ public class Document {
         this.documentName = documentName;
         User owner = new User(username);
         this.ownerId = owner.userId;
-        users.put(this.ownerId, owner);
+        tree = new CRDT_TREE(documentName, username);
     }
 
     private void initalizeTree(String content) {
-        tree = new CRDT_TREE(UUID.randomUUID().toString());
         tree.localInsert(0, content, 0);
+    }
+
+    public Node[] getDocumentNodes() {
+        return tree.sendTree();
+    }
+
+    public void handleOperation(Operation operation) {
+        tree.remoteUpdate(operation);
     }
 }

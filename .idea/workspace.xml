@@ -4,7 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e8d66364-a5a7-41c0-b6fa-c4dc137e456c" name="Changes" comment="" />
+    <list default="true" id="e8d66364-a5a7-41c0-b6fa-c4dc137e456c" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/CRDT/CRDT_TREE.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/CRDT/CRDT_TREE.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/CRDT/ID.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/CRDT/ID.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Node.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Operation.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/CRDT/Operation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Controller/DocumentRestController.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Controller/DocumentRestController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Model/Document.java" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/src/main/java/com/DocumentCollaborator/DocumentCollaborator/Model/Document.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/CRDT_TREE.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/CRDT_TREE.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/ID.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/ID.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Node.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Operation.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/CRDT/Operation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/JavaFxControllers/CreateDocumentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/JavaFxControllers/CreateDocumentController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/JavaFxControllers/LoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/JavaFxControllers/LoginController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/WebSocketHandler/WebSocketHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/FrontEnd/src/main/java/org/example/texteditor/WebSocketHandler/WebSocketHandler.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -32,9 +49,11 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "Omar",
+    "git-widget-placeholder": "sawy",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/materials for college/Spring 2024-2025/Advanced Programming Techniques/projects/CRDT/Collaborative-Document-Editor"
+    "last_opened_file_path": "C:/Users/youse/Documents/APT/Collaborative-Document-Editor",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RunManager">
@@ -44,11 +63,14 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
-      <module name="texteditor" />
-      <option name="filePath" />
-      <method v="2" />
-    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.23774.435" />
+        <option value="bundled-js-predefined-d6986cc7102b-f27c65a3e318-JavaScript-IU-251.23774.435" />
+      </set>
+    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -58,6 +80,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1745943228013</updated>
+      <workItem from="1746138033184" duration="17000" />
     </task>
     <servers />
   </component>
