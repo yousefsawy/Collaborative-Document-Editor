@@ -3,6 +3,7 @@ import CRDT.Node;
 import com.DocumentCollaborator.DocumentCollaborator.DTO.DocumentCreateRequest;
 import com.DocumentCollaborator.DocumentCollaborator.DTO.DocumentCreateResponse;
 import com.DocumentCollaborator.DocumentCollaborator.Model.Document;
+import com.DocumentCollaborator.DocumentCollaborator.Model.User;
 import com.DocumentCollaborator.DocumentCollaborator.Service.DocumentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -33,6 +34,13 @@ public class DocumentRestController {
             return documentService.createDocument(request.getTitle(), request.getUsername());
         }
     }
+
+    @GetMapping("/users/{documentId}")
+    public User[] getDocumentUsers(@PathVariable String documentId) {
+        System.out.println("DocumentId: " + documentId);
+        return documentService.getDocumentUsers(documentId);
+    }
+
 
     // TESTING PURPOSES ONLY SHOULDN'T BE CALLED ON CLIENT SIDE
     @GetMapping("/{documentId}")

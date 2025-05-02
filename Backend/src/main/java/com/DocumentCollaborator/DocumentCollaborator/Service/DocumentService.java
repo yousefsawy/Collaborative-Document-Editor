@@ -5,6 +5,7 @@ import CRDT.Node;
 import CRDT.Operation;
 import com.DocumentCollaborator.DocumentCollaborator.DTO.DocumentCreateResponse;
 import com.DocumentCollaborator.DocumentCollaborator.Model.Document;
+import com.DocumentCollaborator.DocumentCollaborator.Model.User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,11 +45,13 @@ public class DocumentService {
         return null;
     }
 
-    public Node[] getDocumentNodes(String documentId){
+    public Node[] getDocumentNodes(String documentId)
+    {
         return getDocument(documentId).getDocumentNodes();
     }
+
     public void handleDocumentOperation(String documentId, Operation operation){
-        systemDocuments.get(documentId).handleOperation(operation);
+        getDocument(documentId).handleOperation(operation);
     }
     private void setDocument(Document doc)
     {
@@ -58,4 +61,7 @@ public class DocumentService {
         };
     }
 
+    public User[] getDocumentUsers(String documentId) {
+        return getDocument(documentId).getUsers().values().toArray(new User[0]);
+    }
 }

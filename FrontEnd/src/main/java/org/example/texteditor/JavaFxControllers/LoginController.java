@@ -66,17 +66,22 @@ public class LoginController {
 
         WebSocketHandler webSocketHandler = new WebSocketHandler();
         webSocketHandler.connectToWebSocket();
-        webSocketHandler.connectToDocument(documentIdField.getText());
+        // webSocketHandler.connectToDocument(documentIdField.getText());
+
+        webSocketHandler.connectToDocumentAsync(documentId, (Node[] receivedNodes) -> {
+            this.nodes = receivedNodes;
+            Platform.runLater(this::openEditDocumentForm);
+        });
 
 
-        nodes = webSocketHandler.getNodes();
-
-        while(nodes == null)
-        {
-            nodes = webSocketHandler.getNodes();
-        }
-
-        openEditDocumentForm();
+//        nodes = webSocketHandler.getNodes();
+//
+//        while(nodes == null)
+//        {
+//            nodes = webSocketHandler.getNodes();
+//        }
+//
+//        openEditDocumentForm();
 
 
     }

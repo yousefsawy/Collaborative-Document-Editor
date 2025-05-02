@@ -70,7 +70,9 @@ public class WebSocketHandler {
                 if (payload instanceof Node[]) {
                     nodes = (Node[]) payload;
                     System.out.println("WEBSOCKET: Received " + nodes.length + " nodes from server");
-
+                    if (onNodesReceived != null) {
+                        onNodesReceived.accept(nodes);
+                    }
 
 //                    // Log some details about the nodes
 //                    for (int i = 0; i < Math.min(nodes.length, 3); i++) {
@@ -202,6 +204,33 @@ public class WebSocketHandler {
             e.printStackTrace();
         }
     }
+
+    public void connectToDocumentAsync(String documentId, Consumer<Node[]> callback) {
+        if (stompSession == null || !stompSession.isConnected()) {
+            System.err.println("WEBSOCKET: Cannot subscribe - not connected");
+            return;
+        }
+
+        try {
+            System.out.println("========================================");
+            System.out.println("WEBSOCKET: Subscribing to document: " + documentId);
+
+            // Store the callback
+            this.onNodesReceived = callback;
+
+            NodeArrayFrameHandler frameHandler = new NodeArrayFrameHandler();
+
+            stompSession.subscribe("/user/response/connect", frameHandler);
+
+            // Trigger server-side connect logic
+            stompSession.send("/app/connect/" + documentId, "");
+
+        } catch (Exception e) {
+            System.err.println("WEBSOCKET: Error connecting to document: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 
     public void close() {
         if (this.stompSession != null) {

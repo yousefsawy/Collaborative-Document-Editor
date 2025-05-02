@@ -1,6 +1,7 @@
 package org.example.texteditor.JavaFxControllers;
 
 import CRDT.Node;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -105,16 +106,20 @@ public class CreateDocumentController {
 
                 WebSocketHandler webSocketHandler = new WebSocketHandler();
                 webSocketHandler.connectToWebSocket();
-                webSocketHandler.connectToDocument(body.getDocumentId());
 
-                nodes = webSocketHandler.getNodes();
+                webSocketHandler.connectToDocumentAsync(body.getDocumentId(), (Node[] receivedNodes) -> {
+                    this.nodes = receivedNodes;
+                    Platform.runLater(this::openEditDocumentForm);
+                });
 
-                while(nodes == null)
-                {
-                    nodes = webSocketHandler.getNodes();
-                }
-
-                openEditDocumentForm();
+//                nodes = webSocketHandler.getNodes();
+//
+//                while(nodes == null)
+//                {
+//                    nodes = webSocketHandler.getNodes();
+//                }
+//
+//                openEditDocumentForm();
 
 
             } else if (response.getStatusCode().is4xxClientError()) {
