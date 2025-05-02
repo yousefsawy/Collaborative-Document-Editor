@@ -16,6 +16,7 @@ module org.example.texteditor {
 
     requires static lombok;
     requires com.fasterxml.jackson.databind;
+    requires java.desktop;
 
     opens org.example.texteditor to spring.core, spring.beans, spring.context;
     opens org.example.texteditor.DTO to spring.core;

@@ -35,6 +35,7 @@ public class DocumentRestController {
         }
     }
 
+    // TESTING PURPOSES ONLY SHOULDN'T BE CALLED ON CLIENT SIDE 
     @GetMapping("/users/{documentId}")
     public User[] getDocumentUsers(@PathVariable String documentId) {
         System.out.println("DocumentId: " + documentId);

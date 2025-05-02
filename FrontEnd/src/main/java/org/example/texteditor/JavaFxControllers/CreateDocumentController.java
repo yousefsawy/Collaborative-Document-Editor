@@ -25,6 +25,9 @@ public class CreateDocumentController {
     static final String BASE_URL="http://localhost:8080/";
     RestTemplate restTemplate;
     private String username;
+    private String userId;
+    WebSocketHandler webSocketHandler;
+    String documentId;
 
     Node[] nodes;
 
@@ -43,9 +46,13 @@ public class CreateDocumentController {
     @FXML
     private Label welcomeLabel;
 
-    // Set username dynamically from another part of the application
-    public void setWelcomeUsername(String username) {
+    public void initialize(WebSocketHandler webSocketHandler, String username) {
+        this.webSocketHandler = webSocketHandler;
         restTemplate = new RestTemplate();
+        setWelcomeUsername(username);
+    }
+
+    public void setWelcomeUsername(String username) {
         this.username = username;
         welcomeLabel.setText("Welcome, " + username);
     }
@@ -103,23 +110,17 @@ public class CreateDocumentController {
 
                 // Show success
                 System.out.println("Document Created with ID: " + body.getDocumentId());
+                this.documentId = body.getDocumentId();
+                this.userId = body.getUserId();
 
-                WebSocketHandler webSocketHandler = new WebSocketHandler();
+
+                webSocketHandler = new WebSocketHandler();
                 webSocketHandler.connectToWebSocket();
 
                 webSocketHandler.connectToDocumentAsync(body.getDocumentId(), (Node[] receivedNodes) -> {
                     this.nodes = receivedNodes;
                     Platform.runLater(this::openEditDocumentForm);
                 });
-
-//                nodes = webSocketHandler.getNodes();
-//
-//                while(nodes == null)
-//                {
-//                    nodes = webSocketHandler.getNodes();
-//                }
-//
-//                openEditDocumentForm();
 
 
             } else if (response.getStatusCode().is4xxClientError()) {
@@ -140,7 +141,7 @@ public class CreateDocumentController {
             Scene editScene = new Scene(loader.load());
 
             EditController editController = loader.getController();
-            editController.initialize(nodes);
+            editController.initialize(nodes, webSocketHandler, documentId, userId);
 
             // Get the current window and set the new scene
             Stage stage = (Stage) createDocumentButton.getScene().getWindow();

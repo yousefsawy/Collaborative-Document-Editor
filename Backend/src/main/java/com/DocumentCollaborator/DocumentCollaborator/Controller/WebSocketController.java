@@ -15,9 +15,9 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 public class WebSocketController {
+
     @Autowired
     private final DocumentService documentService;
-
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -26,10 +26,10 @@ public class WebSocketController {
         this.documentService = documentService;
     }
 
-    // Method 1: Using @SendTo annotation
     @MessageMapping("/operation/{documentId}")
     @SendTo("/topic/operation/{documentId}")
     public Operation handleOperation(@DestinationVariable String documentId, @Payload Operation Op) {
+        System.out.println("Sending response operation: " + Op);
         documentService.handleDocumentOperation(documentId, Op);
         return Op;
     }
@@ -38,7 +38,8 @@ public class WebSocketController {
     @MessageMapping("/connect/{documentId}")
     @SendToUser("/response/connect")
     public Node[] handleConnect(@DestinationVariable String documentId) {
-        System.out.println("Sending response: ");
+        System.out.println("Sending response: Connection");
+        // documentService.addUserToDocument(username, documentId); // TODO: COULD BE CHANGED TO A DIFFERENT POST REQUEST
         return documentService.getDocumentNodes(documentId);
     }
 

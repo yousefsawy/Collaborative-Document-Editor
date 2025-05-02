@@ -64,4 +64,8 @@ public class DocumentService {
     public User[] getDocumentUsers(String documentId) {
         return getDocument(documentId).getUsers().values().toArray(new User[0]);
     }
+
+    public void addUserToDocument(String documentId, String username){
+        getDocument(documentId).addUser(username);
+    }
 }

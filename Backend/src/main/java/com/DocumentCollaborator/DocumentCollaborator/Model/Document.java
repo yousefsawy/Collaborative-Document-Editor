@@ -52,7 +52,6 @@ public class Document {
         this.documentName = documentName;
         User owner = new User(username);
         this.ownerId = owner.userId;
-        users.put(this.ownerId, owner);
         tree = new CRDT_TREE(documentName, username);
     }
 

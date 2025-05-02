@@ -22,8 +22,12 @@ public class LoginController {
     @FXML
     private TextField documentIdField;
 
+    WebSocketHandler webSocketHandler;
+
     public void initialize() {
         System.out.println("Initializing Login Controller");
+        webSocketHandler = new WebSocketHandler();
+        webSocketHandler.connectToWebSocket();
     }
 
     public void handleCreateDocument() {
@@ -43,7 +47,7 @@ public class LoginController {
             Scene createDocumentScene = new Scene(loader.load());
 
             CreateDocumentController createDocController = loader.getController();
-            createDocController.setWelcomeUsername(username);
+            createDocController.initialize(webSocketHandler, username);
 
             Stage currentStage = (Stage) usernameField.getScene().getWindow();
             currentStage.setScene(createDocumentScene);
@@ -64,26 +68,10 @@ public class LoginController {
             return;
         }
 
-        WebSocketHandler webSocketHandler = new WebSocketHandler();
-        webSocketHandler.connectToWebSocket();
-        // webSocketHandler.connectToDocument(documentIdField.getText());
-
         webSocketHandler.connectToDocumentAsync(documentId, (Node[] receivedNodes) -> {
             this.nodes = receivedNodes;
             Platform.runLater(this::openEditDocumentForm);
         });
-
-
-//        nodes = webSocketHandler.getNodes();
-//
-//        while(nodes == null)
-//        {
-//            nodes = webSocketHandler.getNodes();
-//        }
-//
-//        openEditDocumentForm();
-
-
     }
 
     private void openEditDocumentForm() {
@@ -92,13 +80,12 @@ public class LoginController {
             Scene editScene = new Scene(loader.load());
 
             EditController editController = loader.getController();
-            editController.initialize(nodes);
+            editController.initialize(nodes, webSocketHandler, documentIdField.getText(), usernameField.getText());
 
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(editScene);
             stage.setTitle("Edit Document");
             stage.show();
-
         } catch (IOException e) {
             e.printStackTrace();
             showError("Error opening Edit Document form");
