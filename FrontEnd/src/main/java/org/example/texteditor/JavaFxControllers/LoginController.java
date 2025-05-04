@@ -9,6 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
+import org.example.texteditor.DTO.DocumentCreateResponse;
 import org.example.texteditor.WebSocketHandler.WebSocketHandler;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
@@ -30,6 +31,7 @@ public class LoginController {
     WebSocketHandler webSocketHandler;
 
     String[] users;
+    String documentId;
 
     boolean isEditor;
 
@@ -87,6 +89,19 @@ public class LoginController {
                 BASE_URL + "documents/" + documentId, boolean.class
         );
 
+        ResponseEntity<DocumentCreateResponse> documentIds = restTemplate.getForEntity(
+                BASE_URL + "documents/ids/" + documentId, DocumentCreateResponse.class
+        );
+
+
+        System.out.println(responseUsers.getBody());
+
+        assert documentIds.getBody() != null;
+        this.documentId = documentIds.getBody().getDocumentId();
+
+
+
+
         isEditor = Boolean.TRUE.equals(responseEditor.getBody());
 
 
@@ -104,7 +119,7 @@ public class LoginController {
             Scene editScene = new Scene(loader.load());
 
             EditController editController = loader.getController();
-            editController.initialize(nodes, webSocketHandler, documentIdField.getText(), usernameField.getText(), users, isEditor, "", "");
+            editController.initialize(nodes, webSocketHandler, documentId, usernameField.getText(), users, isEditor, "", "");
 
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(editScene);
