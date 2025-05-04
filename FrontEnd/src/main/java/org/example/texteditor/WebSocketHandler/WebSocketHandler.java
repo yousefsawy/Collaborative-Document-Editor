@@ -146,7 +146,7 @@ public class WebSocketHandler {
     }
 
     /* ----------------------------- USER UPDATE HANDLERS ----------------------------------------------- */
-    public void sendUserUpdate(String documentId, String[] users) {
+    public void sendUserUpdate(String documentId, User[] users) {
         if (stompSession == null || !stompSession.isConnected()) {
             System.err.println("WEBSOCKET: not connected");
             return;
@@ -161,7 +161,7 @@ public class WebSocketHandler {
         }
     }
 
-    public void receiveUserUpdates(String documentId, Consumer<String[]> usersCallback) {
+    public void receiveUserUpdates(String documentId, Consumer<User[]> usersCallback) {
         if (stompSession == null || !stompSession.isConnected()) {
             System.err.println("WEBSOCKET: not connected");
             return;

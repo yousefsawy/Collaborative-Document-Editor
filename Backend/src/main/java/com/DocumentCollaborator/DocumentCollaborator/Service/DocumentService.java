@@ -72,12 +72,12 @@ public class DocumentService {
         };
     }
 
-    public String[] getDocumentUsers(String documentId) {
+    public User[] getDocumentUsers(String documentId) {
         Document document = getDocument(documentId);
         if (document != null && !document.getUsers().isEmpty()) {
-            return document.getUsers().values().toArray(new String[0]);
+            return document.getUsers().values().toArray(new User[0]);
         }
-        return new String[0];
+        return new User[0];
     }
     public boolean isEdtior(String documentId) {
         return EditorIds.containsKey(documentId) || systemDocuments.containsKey(documentId);

@@ -49,7 +49,7 @@ public class DocumentRestController {
 
 
     @GetMapping("/users/{documentId}")
-    public String[] getDocumentUsers(@PathVariable String documentId) {
+    public User[] getDocumentUsers(@PathVariable String documentId) {
         System.out.println("DocumentId: " + documentId);
         return documentService.getDocumentUsers(documentId);
     }

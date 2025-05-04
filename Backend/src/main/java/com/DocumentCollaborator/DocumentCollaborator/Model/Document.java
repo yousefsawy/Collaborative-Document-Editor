@@ -19,7 +19,7 @@ public class Document {
     String documentName;
 
     @JsonIgnore
-    ConcurrentHashMap<String, String> users = new ConcurrentHashMap<String,String>();
+    ConcurrentHashMap<String, User> users = new ConcurrentHashMap<String,User>();
 
     @JsonIgnore
     CRDT_TREE tree;
@@ -44,7 +44,7 @@ public class Document {
     }
 
     private void initalizeTree(String content) {
-        tree.localInsert(0, content, 0);
+        tree.localInsert(0, content, System.currentTimeMillis());
     }
 
     public Node[] getDocumentNodes() {
@@ -55,11 +55,14 @@ public class Document {
         tree.remoteUpdate(operation);
     }
 
-    public void setUsersFromArray(String[] usersArray) {
+    public void setUsersFromArray(User[] usersArray) {
         // Clear the current users map and add the new ones
+        User[] copyUsersArray = usersArray.clone();
+        Integer counter = 0;
         users.clear();
-        for (String user : usersArray) {
-            users.put(UUID.randomUUID().toString(), user);  // Assuming username is unique
+        for (User user : usersArray) {
+            User newUser = new User(user.getUsername(), copyUsersArray[counter++].getCaretColor());
+            users.put(newUser.getUserId(), newUser);
         }
     }
 

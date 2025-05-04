@@ -40,7 +40,7 @@ public class WebSocketController {
 
     @MessageMapping("/users/{documentId}")
     @SendTo("/response/users/{documentId}")
-    public String[] handleUser(@DestinationVariable String documentId, @Payload String[] Users) {
+    public User[] handleUser(@DestinationVariable String documentId, @Payload User[] Users) {
         System.out.println("Sending response: Users " + Arrays.toString(Users));
         documentService.getDocument(documentId).setUsersFromArray(Users);
         return Users;

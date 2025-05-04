@@ -12,6 +12,8 @@ public class CRDT_TREE {
     private Stack<Operation> undoStack = new Stack<>();
     private Stack<Operation> redoStack = new Stack<>();
 
+    private Integer displayedLength;
+
     public CRDT_TREE(String docName, String userName) {
         ID owner = new ID(docName, 0);
         this.root = new Node(owner, "", null);
@@ -19,12 +21,14 @@ public class CRDT_TREE {
         idNodeMap.put(owner, this.root);
         this.docName = docName;
         this.userName = userName;
+        this.displayedLength = 0;
     }
 
     public CRDT_TREE(String docName, String userName, Node[] nodes) {
         this.docName = docName;
         this.userName = userName;
         this.idNodeMap = new HashMap<>();
+        this.displayedLength = 0;
 
         // Handle empty array case
         if (nodes.length == 0) {
@@ -37,6 +41,10 @@ public class CRDT_TREE {
         // Create deep copies of all nodes to avoid reference issues
         for (Node node : nodes) {
             Node newNode = new Node(node.id, node.content, node.parentId);
+            if(!newNode.isDeleted) {
+                displayedLength++;
+            }
+
             newNode.isDeleted = node.isDeleted;
             newNode.children = new ArrayList<>(); // Start with empty children list
             idNodeMap.put(newNode.id, newNode);
@@ -98,6 +106,8 @@ public class CRDT_TREE {
         if (chars.length == 0) {
             return null;
         }
+
+        this.displayedLength += chars.length;
         Node[] nodes = new Node[text.length()];
 
         // Insert the first character
@@ -128,9 +138,15 @@ public class CRDT_TREE {
 
     // Delete one character
     public Operation localDeleteOne(int position) {
+        if(position <= 0 || position >= displayedLength) {
+            return null;
+        }
+
         ID id = getParentByPosition(position);
         Node node = idNodeMap.get(id);
         node.isDeleted = true;
+
+        this.displayedLength--;
 
         Node[] nodes = new Node[]{node};
 
@@ -158,14 +174,6 @@ public class CRDT_TREE {
         idNodeMap.put(id, newNode);
     }
 
-    public void remoteDelete(ID id) {
-        if (!idNodeMap.containsKey(id)) {
-            throw new IllegalArgumentException("Node not found for remote delete: " + id);
-        }
-        Node node = idNodeMap.get(id);
-        node.isDeleted = true;
-    }
-
     public void remoteUpdate(Operation op) {
         if (op == null || op.nodes == null || op.nodes.length == 0) {
             return;
@@ -182,6 +190,7 @@ public class CRDT_TREE {
                         // Node doesn't exist, create it
                         remoteInsert(opNode.parentId, opNode.content, opNode.id);
                     }
+                    this.displayedLength++;
                 }
                 break;
 
@@ -190,6 +199,7 @@ public class CRDT_TREE {
                     Node localNode = idNodeMap.get(opNode.id);
                     if (localNode != null) {
                         localNode.isDeleted = true;
+                        this.displayedLength--;
                     } else {
                         System.err.println("Tried to delete missing node: " + opNode.id);
                     }
@@ -202,6 +212,11 @@ public class CRDT_TREE {
                     Node localNode = idNodeMap.get(opNode.id);
                     if (localNode != null) {
                         // Toggle deletion state
+                        if(localNode.isDeleted) {
+                            this.displayedLength++;
+                        } else {
+                            this.displayedLength--;
+                        }
                         localNode.isDeleted = !localNode.isDeleted;
                     } else {
 
@@ -216,6 +231,11 @@ public class CRDT_TREE {
                     Node localNode = idNodeMap.get(opNode.id);
                     if (localNode != null) {
                         // Toggle deletion state
+                        if(localNode.isDeleted) {
+                            this.displayedLength++;
+                        } else {
+                            this.displayedLength--;
+                        }
                         localNode.isDeleted = !localNode.isDeleted;
                     } else {
                         // If node doesn't exist, recreate it
@@ -241,6 +261,7 @@ public class CRDT_TREE {
             for (Node node : nodes) {
                 Node localNode = idNodeMap.get(node.id);
                 if (localNode != null) {
+                    this.displayedLength--;
                     localNode.isDeleted = true;
                 }
             }
@@ -257,6 +278,7 @@ public class CRDT_TREE {
             for (Node node : nodes) {
                 Node localNode = idNodeMap.get(node.id);
                 if (localNode != null) {
+                    this.displayedLength++;
                     localNode.isDeleted = false;
                 }
             }
@@ -286,6 +308,7 @@ public class CRDT_TREE {
             for (Node node : nodes) {
                 Node localNode = idNodeMap.get(node.id);
                 if (localNode != null) {
+                    this.displayedLength++;
                     localNode.isDeleted = false;
                 }
             }
@@ -302,6 +325,7 @@ public class CRDT_TREE {
             for (Node node : nodes) {
                 Node localNode = idNodeMap.get(node.id);
                 if (localNode != null) {
+                    this.displayedLength--;
                     localNode.isDeleted = true;
                 }
             }
@@ -405,6 +429,9 @@ public class CRDT_TREE {
         return getParentByPosition(root, position, new Counter());
     }
 
+    public Integer getDisplayedLength() {
+        return displayedLength;
+    }
     // Simple counter class
     private static class Counter {
 

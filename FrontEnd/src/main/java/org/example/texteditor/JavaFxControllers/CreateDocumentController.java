@@ -11,6 +11,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.example.texteditor.DTO.DocumentCreateRequest;
 import org.example.texteditor.DTO.DocumentCreateResponse;
+import org.example.texteditor.DTO.User;
 import org.example.texteditor.WebSocketHandler.WebSocketHandler;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -27,7 +28,7 @@ public class CreateDocumentController {
     private String username;
     WebSocketHandler webSocketHandler;
     String documentId;
-    String[] users;
+    User[] users;
 
     Node[] nodes;
 
@@ -121,8 +122,8 @@ public class CreateDocumentController {
                 this.viewerId = body.getViewerId();
 
 
-                ResponseEntity<String[]> responseUsers = restTemplate.getForEntity(
-                        BASE_URL + "users/" + documentId, String[].class
+                ResponseEntity<User[]> responseUsers = restTemplate.getForEntity(
+                        BASE_URL + "users/" + documentId, User[].class
                 );
 
                 users = responseUsers.getBody();

@@ -10,6 +10,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 import org.example.texteditor.DTO.DocumentCreateResponse;
+import org.example.texteditor.DTO.User;
 import org.example.texteditor.WebSocketHandler.WebSocketHandler;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestOperations;
@@ -30,7 +31,7 @@ public class LoginController {
 
     WebSocketHandler webSocketHandler;
 
-    String[] users;
+    User[] users;
     String documentId;
 
     boolean isEditor;
@@ -81,8 +82,8 @@ public class LoginController {
 
         RestOperations restTemplate = new RestTemplate();
 
-        ResponseEntity<String[]> responseUsers = restTemplate.getForEntity(
-                BASE_URL + "users/" + documentId, String[].class
+        ResponseEntity<User[]> responseUsers = restTemplate.getForEntity(
+                BASE_URL + "users/" + documentId, User[].class
         );
 
         ResponseEntity<Boolean> responseEditor = restTemplate.getForEntity(
@@ -99,13 +100,16 @@ public class LoginController {
         assert documentIds.getBody() != null;
         this.documentId = documentIds.getBody().getDocumentId();
 
-
-
-
         isEditor = Boolean.TRUE.equals(responseEditor.getBody());
 
-
         users = responseUsers.getBody();
+
+        for (User user : users) {
+            if(user.getUsername().equals(usernameField.getText())) {
+                showError("Username already exists in the document");
+                return;
+            }
+        }
 
         webSocketHandler.connectToDocumentAsync(documentId, (Node[] receivedNodes) -> {
             this.nodes = receivedNodes;
