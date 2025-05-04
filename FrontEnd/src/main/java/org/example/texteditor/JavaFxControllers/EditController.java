@@ -4,7 +4,9 @@ import CRDT.CRDT_TREE;
 import CRDT.Node;
 import CRDT.Operation;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
@@ -26,6 +28,9 @@ import java.util.Objects;
 
 public class EditController {
 
+    public Label ViewerIdFx;
+    public Label EditorIdFx;
+    public Button undoButton;
     private CRDT_TREE tree;
     private WebSocketHandler webSocketHandler;
     private String documentId;
@@ -56,7 +61,7 @@ public class EditController {
         // Populate the VBox with user items
 
         // Initialize the CRDT tree
-        tree = new CRDT_TREE("Doc", userId, nodes);
+        tree = new CRDT_TREE("Doc", username, nodes);
         this.webSocketHandler = webSocketHandler;
         this.documentId = documentId;
         this.userId = userId;
@@ -132,9 +137,7 @@ public class EditController {
 
     private void handleWindowClose(WindowEvent event) {
         System.out.println("Window closing, removing user: " + username);
-        // Remove the current user from the users list
         removeUser(username);
-        // Close the WebSocket connection
         webSocketHandler.close();
     }
 
@@ -143,10 +146,8 @@ public class EditController {
         List<String> userList = new ArrayList<>(List.of(users)); // Convert to list for easier removal
         userList.remove(username); // Remove the username
 
-        // Update the array after removal
         users = userList.toArray(new String[0]);
 
-        // Send the updated user list
         webSocketHandler.sendUserUpdate(documentId, users);
 
         // Update the UI
@@ -268,5 +269,29 @@ public class EditController {
         
         // If we get here, the difference continues to the startFrom position
         return startFrom;
+    }
+
+    @FXML
+    private void undoButton() {
+        Operation undoOp = tree.undo();
+        if (undoOp != null) {
+            suppressListener = true;
+            documentContentArea.setText(tree.getDocument());
+            suppressListener = false;
+
+            webSocketHandler.sendDocumentOperation(documentId, undoOp);
+        }
+    }
+
+    @FXML
+    private void redoButton() {
+        Operation redoOp = tree.redo();
+        if (redoOp != null) {
+            suppressListener = true;
+            documentContentArea.setText(tree.getDocument());
+            suppressListener = false;
+
+            webSocketHandler.sendDocumentOperation(documentId, redoOp);
+        }
     }
 }
