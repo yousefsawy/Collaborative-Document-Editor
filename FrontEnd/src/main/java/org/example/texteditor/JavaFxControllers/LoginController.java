@@ -10,12 +10,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 import org.example.texteditor.WebSocketHandler.WebSocketHandler;
-import org.example.texteditor.models.User;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 public class LoginController {
     private Node[] nodes;
@@ -72,8 +68,7 @@ public class LoginController {
             return;
         }
 
-        // Connect to the document and fetch nodes
-        webSocketHandler.connectToDocumentAsync(documentId, usernameField.getText(), (Node[] receivedNodes) -> {
+        webSocketHandler.connectToDocumentAsync(documentId, (Node[] receivedNodes) -> {
             this.nodes = receivedNodes;
             Platform.runLater(this::openEditDocumentForm);
         });
@@ -83,10 +78,10 @@ public class LoginController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/texteditor/edit-view.fxml"));
             Scene editScene = new Scene(loader.load());
-    
+
             EditController editController = loader.getController();
             editController.initialize(nodes, webSocketHandler, documentIdField.getText(), usernameField.getText());
-        
+
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(editScene);
             stage.setTitle("Edit Document");

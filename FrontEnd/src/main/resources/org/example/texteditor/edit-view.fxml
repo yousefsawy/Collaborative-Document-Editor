@@ -11,7 +11,6 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
-<?import org.example.texteditor.components.RichTextEditor?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.texteditor.JavaFxControllers.EditController">
     <top>
@@ -45,7 +44,7 @@
 
     <center>
         <ScrollPane fitToWidth="true" fitToHeight="true">
-                <RichTextEditor fx:id="richTextArea" prefWidth="600" prefHeight="400"/>
+            <TextArea fx:id="documentContentArea" wrapText="true" promptText="Start typing here..." />
         </ScrollPane>
     </center>
 </BorderPane>

@@ -26,7 +26,5 @@ module org.example.texteditor {
     exports org.example.texteditor.DTO;
     exports org.example.texteditor.JavaFxControllers;
     exports CRDT to com.fasterxml.jackson.databind;
-    exports org.example.texteditor.models;
 
-    exports org.example.texteditor.components;
 }

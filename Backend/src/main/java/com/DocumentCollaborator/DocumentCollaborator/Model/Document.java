@@ -35,9 +35,9 @@ public class Document {
         initalizeVariables(documentName, username);
     }
 
-    public void addUser(String name) {
-        User user = new User(name, users.size() + 1);
-        users.put(user.getUserId(), user);
+    public void addUser(String username) {
+        User user = new User(username);
+        users.put(user.userId, user);
     }
 
     public void removeUser(String id) {
@@ -50,8 +50,8 @@ public class Document {
         this.editorId = UUID.randomUUID().toString();
         this.viewerId = UUID.randomUUID().toString();
         this.documentName = documentName;
-        User owner = new User(username, 0);
-        this.ownerId = owner.getUserId();
+        User owner = new User(username);
+        this.ownerId = owner.userId;
         tree = new CRDT_TREE(documentName, username);
     }
 
@@ -65,9 +65,5 @@ public class Document {
 
     public void handleOperation(Operation operation) {
         tree.remoteUpdate(operation);
-    }
-
-    public boolean hasUser(String id) {
-        return users.containsKey(id);
     }
 }
