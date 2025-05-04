@@ -17,6 +17,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import java.util.List;
+import java.util.Objects;
 
 public class EditController {
 
@@ -72,6 +73,8 @@ public class EditController {
 
     private void executeOperationOnTree(Operation receivedOperation) {
         // Save cursor position before update
+        if (Objects.equals(receivedOperation.getUser(), userId))
+            return;
         int caretPosition = documentContentArea.getCaretPosition();
         
         // Apply the remote operation to the tree
@@ -117,7 +120,8 @@ public class EditController {
                 long timestamp = System.currentTimeMillis();
                 for (int i = 0; i < insertedText.length(); i++) {
                     char c = insertedText.charAt(i);
-                    Operation operation = tree.localInsert(diffIndex + i, String.valueOf(c), timestamp);
+                    System.out.println("inserted char: " + String.valueOf(c) + ", timestamp: " + timestamp + "Position: " + (diffIndex + i)/10);
+                    Operation operation = tree.localInsert((diffIndex + i) / 10, String.valueOf(c), timestamp);
                     if (operation != null) {
                         webSocketHandler.sendDocumentOperation(documentId, operation);
                     }
@@ -135,7 +139,8 @@ public class EditController {
                 
                 // Delete characters one by one
                 for (int i = 0; i < deletionLength; i++) {
-                    Operation operation = tree.localDeleteOne(diffIndex);
+                    Operation operation = tree.localDeleteOne(diffIndex/10);
+                    System.out.println("Deleted on charachter: " + diffIndex/10);
                     if (operation != null) {
                         webSocketHandler.sendDocumentOperation(documentId, operation);
                     }
@@ -164,7 +169,7 @@ public class EditController {
                 String insertedText = newText.substring(diffStart, diffEnd + 1);
                 for (int i = 0; i < insertedText.length(); i++) {
                     char c = insertedText.charAt(i);
-                    Operation operation = tree.localInsert(diffStart + i, String.valueOf(c), timestamp);
+                    Operation operation = tree.localInsert((diffStart + i) / 10, String.valueOf(c), timestamp);
                     if (operation != null) {
                         webSocketHandler.sendDocumentOperation(documentId, operation);
                     }
