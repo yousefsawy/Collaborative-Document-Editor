@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Arrays;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,5 +25,13 @@ public class Operation {
         this.nodes = nodes;
         this.user = user;
     }
+
+    public void print() {
+        System.out.println("Operation:");
+        System.out.println("  Type: " + type);
+        System.out.println("  User: " + user);
+        System.out.println("  Nodes: " + Arrays.toString(nodes));
+    }
+
 
 }

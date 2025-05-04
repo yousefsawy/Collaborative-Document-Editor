@@ -1,8 +1,12 @@
 package com.DocumentCollaborator.DocumentCollaborator.Model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Objects;
 import java.util.UUID;
 
+@Getter
 public class User {
     String userId;
     String username;

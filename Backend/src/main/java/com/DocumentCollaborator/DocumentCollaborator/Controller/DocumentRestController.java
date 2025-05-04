@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
+
 
 @RestController
 public class DocumentRestController {
@@ -35,9 +37,19 @@ public class DocumentRestController {
         }
     }
 
-    // TESTING PURPOSES ONLY SHOULDN'T BE CALLED ON CLIENT SIDE 
+    @GetMapping("/documents/ids/{documentId}")
+    public DocumentCreateResponse getDocumentIds(@PathVariable String documentId) {
+        return documentService.getDocumentIds(documentId);
+    }
+
+    @GetMapping("/documents/{documentId}")
+    public Boolean getIsEdtior(@PathVariable String documentId) {
+        return documentService.isEdtior(documentId);
+    }
+
+
     @GetMapping("/users/{documentId}")
-    public User[] getDocumentUsers(@PathVariable String documentId) {
+    public String[] getDocumentUsers(@PathVariable String documentId) {
         System.out.println("DocumentId: " + documentId);
         return documentService.getDocumentUsers(documentId);
     }

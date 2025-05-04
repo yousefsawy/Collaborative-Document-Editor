@@ -17,10 +17,9 @@ public class Document {
     String editorId;
     String viewerId;
     String documentName;
-    String ownerId;
 
     @JsonIgnore
-    ConcurrentHashMap<String, User> users = new ConcurrentHashMap<String,User>();
+    ConcurrentHashMap<String, String> users = new ConcurrentHashMap<String,String>();
 
     @JsonIgnore
     CRDT_TREE tree;
@@ -35,23 +34,12 @@ public class Document {
         initalizeVariables(documentName, username);
     }
 
-    public void addUser(String username) {
-        User user = new User(username);
-        users.put(user.userId, user);
-    }
-
-    public void removeUser(String id) {
-        users.remove(id); // returns false if user was not in the set
-    }
-
     private void initalizeVariables(String documentName, String username)
     {
         this.documentId = UUID.randomUUID().toString();
         this.editorId = UUID.randomUUID().toString();
         this.viewerId = UUID.randomUUID().toString();
         this.documentName = documentName;
-        User owner = new User(username);
-        this.ownerId = owner.userId;
         tree = new CRDT_TREE(documentName, username);
     }
 
@@ -66,4 +54,13 @@ public class Document {
     public void handleOperation(Operation operation) {
         tree.remoteUpdate(operation);
     }
+
+    public void setUsersFromArray(String[] usersArray) {
+        // Clear the current users map and add the new ones
+        users.clear();
+        for (String user : usersArray) {
+            users.put(UUID.randomUUID().toString(), user);  // Assuming username is unique
+        }
+    }
+
 }
