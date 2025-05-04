@@ -8,6 +8,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import org.example.texteditor.DTO.User;
 import org.example.texteditor.WebSocketHandler.WebSocketHandler;
 
 import javax.swing.event.UndoableEditEvent;
@@ -16,6 +19,8 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,6 +32,8 @@ public class EditController {
     private String userId;
     private boolean suppressListener;
     private Document swingDocument;
+    String[] users;
+    String username;
 
     @FXML
     private VBox usersList;
@@ -34,25 +41,28 @@ public class EditController {
     @FXML
     private TextArea documentContentArea;
 
-    public void initialize(Node[] nodes, WebSocketHandler webSocketHandler, String documentId, String userId) {
-        // Example: Fetch dynamic list of users
-        List<String> users = fetchUsers();
+    public void initialize(Node[] nodes, WebSocketHandler webSocketHandler, String documentId, String username,String[] users) {
+        this.users = new String[users.length + 1];
+
+        // Copy existing users into the new array
+        System.arraycopy(users, 0, this.users, 0, users.length);
+
+        // Add the current username to the end of the array
+        this.users[users.length] = username;
+        this.username = username;
+        System.out.println("username:" + " " + Arrays.toString(this.users));
+        executeUserUpdate(this.users);
 
         // Populate the VBox with user items
-        for (String user : users) {
-            Label userLabel = new Label(user);
-            // Apply custom styles to the label
-            userLabel.setStyle("-fx-padding: 5; -fx-background-color: white; -fx-border-color: gray; -fx-border-radius: 5;");
-            userLabel.setOnMouseClicked(event -> handleUserSelection(user));
-            usersList.getChildren().add(userLabel);
-        }
 
         // Initialize the CRDT tree
         tree = new CRDT_TREE("Doc", userId, nodes);
         this.webSocketHandler = webSocketHandler;
         this.documentId = documentId;
         this.userId = userId;
-        
+        System.out.println("Sending users " + Arrays.toString(this.users));
+        webSocketHandler.sendUserUpdate(documentId, this.users);
+
         // Set initial text
         suppressListener = true;
         documentContentArea.setText(tree.getDocument());
@@ -60,20 +70,29 @@ public class EditController {
         
         setupUndoableEditListener();
         subscribeToOperations();
-    }
+        subscribeToUsers();
 
-    private List<String> fetchUsers() {
-        // Replace this with actual data fetching logic
-        return List.of("User 1", "User 2", "User 3", "User 4");
+        Platform.runLater(() -> {
+            Stage stage = (Stage) documentContentArea.getScene().getWindow();
+            stage.setOnCloseRequest(this::handleWindowClose);
+        });
+
+
+        // Handle the window close event
     }
 
     private void subscribeToOperations() {
         webSocketHandler.receiveDocumentOperation(documentId, this::executeOperationOnTree);
     }
 
+    private void subscribeToUsers() {
+        webSocketHandler.receiveUserUpdates(documentId, this::executeUserUpdate);
+    }
+
+
     private void executeOperationOnTree(Operation receivedOperation) {
         // Save cursor position before update
-        if (Objects.equals(receivedOperation.getUser(), userId))
+        if (Objects.equals(receivedOperation.getUser(), username))
             return;
         int caretPosition = documentContentArea.getCaretPosition();
         
@@ -96,10 +115,44 @@ public class EditController {
         });
     }
 
-    private void handleUserSelection(String user) {
-        // Handle user selection (e.g., display user details)
-        System.out.println("Selected user: " + user);
+    private void executeUserUpdate(String[] updatedUsers) {
+        this.users = updatedUsers;
+        System.out.println("Recieved users " + Arrays.toString(this.users));
+
+        Platform.runLater(() -> {
+            usersList.getChildren().clear();
+
+            for (String user : updatedUsers) {
+                Label userLabel = new Label(user);
+                userLabel.setStyle("-fx-padding: 5; -fx-background-color: white; -fx-border-color: gray; -fx-border-radius: 5; -fx-margin: 5;");
+                usersList.getChildren().add(userLabel);
+            }
+        });
     }
+
+    private void handleWindowClose(WindowEvent event) {
+        System.out.println("Window closing, removing user: " + username);
+        // Remove the current user from the users list
+        removeUser(username);
+        // Close the WebSocket connection
+        webSocketHandler.close();
+    }
+
+
+    private void removeUser(String username) {
+        List<String> userList = new ArrayList<>(List.of(users)); // Convert to list for easier removal
+        userList.remove(username); // Remove the username
+
+        // Update the array after removal
+        users = userList.toArray(new String[0]);
+
+        // Send the updated user list
+        webSocketHandler.sendUserUpdate(documentId, users);
+
+        // Update the UI
+        executeUserUpdate(users);
+    }
+
 
     private void setupUndoableEditListener() {
         documentContentArea.textProperty().addListener((obs, oldText, newText) -> {
@@ -120,8 +173,8 @@ public class EditController {
                 long timestamp = System.currentTimeMillis();
                 for (int i = 0; i < insertedText.length(); i++) {
                     char c = insertedText.charAt(i);
-                    System.out.println("inserted char: " + String.valueOf(c) + ", timestamp: " + timestamp + "Position: " + (diffIndex + i)/10);
-                    Operation operation = tree.localInsert((diffIndex + i) / 10, String.valueOf(c), timestamp);
+                    System.out.println("inserted char: " + String.valueOf(c) + ", timestamp: " + timestamp + "Position: " + diffIndex + i);
+                    Operation operation = tree.localInsert(diffIndex + i, String.valueOf(c), timestamp);
                     if (operation != null) {
                         webSocketHandler.sendDocumentOperation(documentId, operation);
                     }
@@ -139,8 +192,8 @@ public class EditController {
                 
                 // Delete characters one by one
                 for (int i = 0; i < deletionLength; i++) {
-                    Operation operation = tree.localDeleteOne(diffIndex/10);
-                    System.out.println("Deleted on charachter: " + diffIndex/10);
+                    Operation operation = tree.localDeleteOne(diffIndex + 1);
+                    System.out.println("Deleted on charachter: " + diffIndex + 1);
                     if (operation != null) {
                         webSocketHandler.sendDocumentOperation(documentId, operation);
                     }
@@ -169,7 +222,7 @@ public class EditController {
                 String insertedText = newText.substring(diffStart, diffEnd + 1);
                 for (int i = 0; i < insertedText.length(); i++) {
                     char c = insertedText.charAt(i);
-                    Operation operation = tree.localInsert((diffStart + i) / 10, String.valueOf(c), timestamp);
+                    Operation operation = tree.localInsert(diffStart + i, String.valueOf(c), timestamp);
                     if (operation != null) {
                         webSocketHandler.sendDocumentOperation(documentId, operation);
                     }

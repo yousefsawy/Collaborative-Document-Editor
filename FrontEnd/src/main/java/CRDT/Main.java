@@ -9,13 +9,14 @@ public class Main {
         doc1.localInsert(0, "a", 100);
         doc1.localInsert(1, "b", 101);
         doc1.localInsert(2, "c", 102);
+        doc1.localDeleteOne(3);
         doc1.localDeleteOne(2);
         doc1.localDeleteOne(1);
-        doc1.localDeleteOne(0);
-        doc1.localDeleteOne(0);
+
         doc1.localInsert(0, "a", 103);
-        doc1.localInsert(1, "a", 104);
-        doc1.localInsert(2, "a", 105);
+        doc1.localInsert(1, "b", 104);
+        doc1.localInsert(2, "c", 105);
+
 
 
 

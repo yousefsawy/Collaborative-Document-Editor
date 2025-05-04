@@ -10,8 +10,13 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 import org.example.texteditor.WebSocketHandler.WebSocketHandler;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+
+import static org.example.texteditor.JavaFxControllers.CreateDocumentController.BASE_URL;
 
 public class LoginController {
     private Node[] nodes;
@@ -23,6 +28,8 @@ public class LoginController {
     private TextField documentIdField;
 
     WebSocketHandler webSocketHandler;
+
+    String[] users;
 
     public void initialize() {
         System.out.println("Initializing Login Controller");
@@ -68,6 +75,19 @@ public class LoginController {
             return;
         }
 
+        RestOperations restTemplate = new RestTemplate();
+
+        ResponseEntity<String[]> responseUsers = restTemplate.getForEntity(
+                BASE_URL + "users/" + documentId, String[].class
+        );
+
+//        ResponseEntity<Boolean> responseEditor = restTemplate.getForEntity(
+//                BASE_URL + "users/" + documentId, boolean.class
+//        );
+
+
+        users = responseUsers.getBody();
+
         webSocketHandler.connectToDocumentAsync(documentId, (Node[] receivedNodes) -> {
             this.nodes = receivedNodes;
             Platform.runLater(this::openEditDocumentForm);
@@ -80,7 +100,7 @@ public class LoginController {
             Scene editScene = new Scene(loader.load());
 
             EditController editController = loader.getController();
-            editController.initialize(nodes, webSocketHandler, documentIdField.getText(), usernameField.getText());
+            editController.initialize(nodes, webSocketHandler, documentIdField.getText(), usernameField.getText(), users);
 
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(editScene);

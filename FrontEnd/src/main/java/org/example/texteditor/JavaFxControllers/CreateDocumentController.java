@@ -25,9 +25,9 @@ public class CreateDocumentController {
     static final String BASE_URL="http://localhost:8080/";
     RestTemplate restTemplate;
     private String username;
-    private String userId;
     WebSocketHandler webSocketHandler;
     String documentId;
+    String[] users;
 
     Node[] nodes;
 
@@ -97,12 +97,16 @@ public class CreateDocumentController {
         try {
             DocumentCreateRequest request = new DocumentCreateRequest(title,username,content);
 
-            ResponseEntity<DocumentCreateResponse> response = restTemplate.postForEntity(
+            ResponseEntity<DocumentCreateResponse> responseDocument = restTemplate.postForEntity(
                     BASE_URL + "create", request, DocumentCreateResponse.class
             );
 
-            if (response.getStatusCode().is2xxSuccessful()) {
-                DocumentCreateResponse body = response.getBody();
+
+
+            if (responseDocument.getStatusCode().is2xxSuccessful()) {
+                DocumentCreateResponse body = responseDocument.getBody();
+
+
                 if (body == null || body.getDocumentId() == null) {
                     showError("Creation Failed", "Server returned an invalid response.");
                     return;
@@ -111,11 +115,18 @@ public class CreateDocumentController {
                 // Show success
                 System.out.println("Document Created with ID: " + body.getDocumentId());
                 this.documentId = body.getDocumentId();
-                this.userId = body.getUserId();
 
+                ResponseEntity<String[]> responseUsers = restTemplate.getForEntity(
+                        BASE_URL + "users/" + documentId, String[].class
+                );
+
+                users = responseUsers.getBody();
 
                 webSocketHandler = new WebSocketHandler();
                 webSocketHandler.connectToWebSocket();
+
+
+
 
                 webSocketHandler.connectToDocumentAsync(body.getDocumentId(), (Node[] receivedNodes) -> {
                     this.nodes = receivedNodes;
@@ -123,9 +134,9 @@ public class CreateDocumentController {
                 });
 
 
-            } else if (response.getStatusCode().is4xxClientError()) {
+            } else if (responseDocument.getStatusCode().is4xxClientError()) {
                 showError("Client Error", "Check your request. Something is wrong on your end.");
-            } else if (response.getStatusCode().is5xxServerError()) {
+            } else if (responseDocument.getStatusCode().is5xxServerError()) {
                 showError("Server Error", "Server encountered a problem. Try again later.");
             }
 
@@ -141,7 +152,7 @@ public class CreateDocumentController {
             Scene editScene = new Scene(loader.load());
 
             EditController editController = loader.getController();
-            editController.initialize(nodes, webSocketHandler, documentId, userId);
+            editController.initialize(nodes, webSocketHandler, documentId, username, users);
 
             // Get the current window and set the new scene
             Stage stage = (Stage) createDocumentButton.getScene().getWindow();
