@@ -25,4 +25,16 @@ public class Node {
         this.isDeleted = false;
         children = new ArrayList<>();
     }
+    @Override
+    public String toString() {
+        return "Node{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", isDeleted=" + isDeleted +
+                ", parentId=" + parentId +
+                ", children=" + children +
+                '}';
+    }
+
+
 }

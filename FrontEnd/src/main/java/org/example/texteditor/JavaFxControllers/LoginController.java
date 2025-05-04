@@ -9,9 +9,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
+import org.example.texteditor.DTO.DocumentCreateResponse;
+import org.example.texteditor.DTO.User;
 import org.example.texteditor.WebSocketHandler.WebSocketHandler;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+
+import static org.example.texteditor.JavaFxControllers.CreateDocumentController.BASE_URL;
 
 public class LoginController {
     private Node[] nodes;
@@ -23,6 +30,11 @@ public class LoginController {
     private TextField documentIdField;
 
     WebSocketHandler webSocketHandler;
+
+    User[] users;
+    String documentId;
+
+    boolean isEditor;
 
     public void initialize() {
         System.out.println("Initializing Login Controller");
@@ -68,6 +80,37 @@ public class LoginController {
             return;
         }
 
+        RestOperations restTemplate = new RestTemplate();
+
+        ResponseEntity<User[]> responseUsers = restTemplate.getForEntity(
+                BASE_URL + "users/" + documentId, User[].class
+        );
+
+        ResponseEntity<Boolean> responseEditor = restTemplate.getForEntity(
+                BASE_URL + "documents/" + documentId, boolean.class
+        );
+
+        ResponseEntity<DocumentCreateResponse> documentIds = restTemplate.getForEntity(
+                BASE_URL + "documents/ids/" + documentId, DocumentCreateResponse.class
+        );
+
+
+        System.out.println(responseUsers.getBody());
+
+        assert documentIds.getBody() != null;
+        this.documentId = documentIds.getBody().getDocumentId();
+
+        isEditor = Boolean.TRUE.equals(responseEditor.getBody());
+
+        users = responseUsers.getBody();
+
+        for (User user : users) {
+            if(user.getUsername().equals(usernameField.getText())) {
+                showError("Username already exists in the document");
+                return;
+            }
+        }
+
         webSocketHandler.connectToDocumentAsync(documentId, (Node[] receivedNodes) -> {
             this.nodes = receivedNodes;
             Platform.runLater(this::openEditDocumentForm);
@@ -80,7 +123,7 @@ public class LoginController {
             Scene editScene = new Scene(loader.load());
 
             EditController editController = loader.getController();
-            editController.initialize(nodes, webSocketHandler, documentIdField.getText(), usernameField.getText());
+            editController.initialize(nodes, webSocketHandler, documentId, usernameField.getText(), users, isEditor, "", "");
 
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(editScene);

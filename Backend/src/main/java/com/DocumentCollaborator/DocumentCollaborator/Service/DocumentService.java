@@ -19,13 +19,19 @@ public class DocumentService {
     public DocumentCreateResponse createDocument(String title, String username, String content){
         Document doc=new Document(title, username, content);
         setDocument(doc);
-        return new DocumentCreateResponse(doc.getDocumentId(), doc.getDocumentName(), doc.getEditorId(), doc.getViewerId(), doc.getOwnerId());
+        return new DocumentCreateResponse(doc.getDocumentId(), doc.getDocumentName(), doc.getEditorId(), doc.getViewerId());
+    }
+
+    public DocumentCreateResponse getDocumentIds(String documentId){
+        Document doc = getDocument(documentId);
+        if (doc==null){ return null;}
+        return new DocumentCreateResponse(doc.getDocumentId(), doc.getDocumentName(), doc.getEditorId(), doc.getViewerId());
     }
 
     public DocumentCreateResponse createDocument(String title, String username){
         Document doc=new Document(title, username);
         setDocument(doc);
-        return new DocumentCreateResponse(doc.getDocumentId(), doc.getDocumentName(), doc.getEditorId(), doc.getViewerId(), doc.getOwnerId());
+        return new DocumentCreateResponse(doc.getDocumentId(), doc.getDocumentName(), doc.getEditorId(), doc.getViewerId());
     }
 
 
@@ -47,11 +53,16 @@ public class DocumentService {
 
     public Node[] getDocumentNodes(String documentId)
     {
-        return getDocument(documentId).getDocumentNodes();
+        if (getDocument(documentId) != null) {
+            return getDocument(documentId).getDocumentNodes();
+        }
+        return null;
     }
 
     public void handleDocumentOperation(String documentId, Operation operation){
-        getDocument(documentId).handleOperation(operation);
+        if (getDocument(documentId) != null) {
+            getDocument(documentId).handleOperation(operation);
+        }
     }
     private void setDocument(Document doc)
     {
@@ -62,10 +73,13 @@ public class DocumentService {
     }
 
     public User[] getDocumentUsers(String documentId) {
-        return getDocument(documentId).getUsers().values().toArray(new User[0]);
+        Document document = getDocument(documentId);
+        if (document != null && !document.getUsers().isEmpty()) {
+            return document.getUsers().values().toArray(new User[0]);
+        }
+        return new User[0];
     }
-
-    public void addUserToDocument(String documentId, String username){
-        getDocument(documentId).addUser(username);
+    public boolean isEdtior(String documentId) {
+        return EditorIds.containsKey(documentId) || systemDocuments.containsKey(documentId);
     }
 }

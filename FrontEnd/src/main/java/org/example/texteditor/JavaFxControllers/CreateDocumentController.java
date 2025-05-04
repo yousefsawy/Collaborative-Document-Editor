@@ -11,6 +11,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.example.texteditor.DTO.DocumentCreateRequest;
 import org.example.texteditor.DTO.DocumentCreateResponse;
+import org.example.texteditor.DTO.User;
 import org.example.texteditor.WebSocketHandler.WebSocketHandler;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -22,12 +23,12 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class CreateDocumentController {
-    static final String BASE_URL="http://localhost:8080/";
+    public static final String BASE_URL="http://localhost:8080/";
     RestTemplate restTemplate;
     private String username;
-    private String userId;
     WebSocketHandler webSocketHandler;
     String documentId;
+    User[] users;
 
     Node[] nodes;
 
@@ -45,6 +46,8 @@ public class CreateDocumentController {
 
     @FXML
     private Label welcomeLabel;
+    private String editorId;
+    private String viewerId;
 
     public void initialize(WebSocketHandler webSocketHandler, String username) {
         this.webSocketHandler = webSocketHandler;
@@ -97,12 +100,16 @@ public class CreateDocumentController {
         try {
             DocumentCreateRequest request = new DocumentCreateRequest(title,username,content);
 
-            ResponseEntity<DocumentCreateResponse> response = restTemplate.postForEntity(
+            ResponseEntity<DocumentCreateResponse> responseDocument = restTemplate.postForEntity(
                     BASE_URL + "create", request, DocumentCreateResponse.class
             );
 
-            if (response.getStatusCode().is2xxSuccessful()) {
-                DocumentCreateResponse body = response.getBody();
+
+
+            if (responseDocument.getStatusCode().is2xxSuccessful()) {
+                DocumentCreateResponse body = responseDocument.getBody();
+
+
                 if (body == null || body.getDocumentId() == null) {
                     showError("Creation Failed", "Server returned an invalid response.");
                     return;
@@ -111,8 +118,15 @@ public class CreateDocumentController {
                 // Show success
                 System.out.println("Document Created with ID: " + body.getDocumentId());
                 this.documentId = body.getDocumentId();
-                this.userId = body.getUserId();
+                this.editorId = body.getEditorId();
+                this.viewerId = body.getViewerId();
 
+
+                ResponseEntity<User[]> responseUsers = restTemplate.getForEntity(
+                        BASE_URL + "users/" + documentId, User[].class
+                );
+
+                users = responseUsers.getBody();
 
                 webSocketHandler = new WebSocketHandler();
                 webSocketHandler.connectToWebSocket();
@@ -123,9 +137,9 @@ public class CreateDocumentController {
                 });
 
 
-            } else if (response.getStatusCode().is4xxClientError()) {
+            } else if (responseDocument.getStatusCode().is4xxClientError()) {
                 showError("Client Error", "Check your request. Something is wrong on your end.");
-            } else if (response.getStatusCode().is5xxServerError()) {
+            } else if (responseDocument.getStatusCode().is5xxServerError()) {
                 showError("Server Error", "Server encountered a problem. Try again later.");
             }
 
@@ -141,7 +155,7 @@ public class CreateDocumentController {
             Scene editScene = new Scene(loader.load());
 
             EditController editController = loader.getController();
-            editController.initialize(nodes, webSocketHandler, documentId, userId);
+            editController.initialize(nodes, webSocketHandler, documentId, username, users,true,editorId, viewerId);
 
             // Get the current window and set the new scene
             Stage stage = (Stage) createDocumentButton.getScene().getWindow();
