@@ -23,7 +23,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class CreateDocumentController {
-    static final String BASE_URL="http://localhost:8080/";
+    public static final String BASE_URL="http://localhost:8080/";
     RestTemplate restTemplate;
     private String username;
     WebSocketHandler webSocketHandler;

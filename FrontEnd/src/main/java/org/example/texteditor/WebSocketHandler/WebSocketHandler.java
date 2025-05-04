@@ -11,8 +11,11 @@ import org.example.texteditor.DTO.User;
 import org.example.texteditor.WebSocketHandler.FrameHandlers.NodeArrayFrameHandler;
 import org.example.texteditor.WebSocketHandler.FrameHandlers.OperationFrameHandler;
 import org.example.texteditor.WebSocketHandler.FrameHandlers.UserArrayFrameHandler;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.*;
+import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
@@ -28,6 +31,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+
+import static org.example.texteditor.JavaFxControllers.CreateDocumentController.BASE_URL;
 
 public class WebSocketHandler {
     private StompSession stompSession;
@@ -102,13 +107,20 @@ public class WebSocketHandler {
         }
 
         try {
-            NodeArrayFrameHandler NodeframeHandler = new NodeArrayFrameHandler(connectCallback);
+            // NodeArrayFrameHandler NodeframeHandler = new NodeArrayFrameHandler(connectCallback);
 
-            // Subscribe to the Node Receiver to Build the Tree
-            stompSession.subscribe("/user/response/connect", NodeframeHandler);
+//            // Subscribe to the Node Receiver to Build the Tree
+//            stompSession.subscribe("/user/response/connect", NodeframeHandler);
+//
+//            // Trigger server-side connect logic
+//            stompSession.send("/app/connect/" + documentId, "");
 
-            // Trigger server-side connect logic
-            stompSession.send("/app/connect/" + documentId, "");
+            RestOperations restTemplate = new RestTemplate();
+
+            ResponseEntity<Node[]> nodes = restTemplate.getForEntity(
+                    BASE_URL+ documentId, Node[].class
+            );
+            connectCallback.accept(nodes.getBody());
 
         } catch (Exception e) {
             System.err.println("WEBSOCKET: Error connecting to document: " + e.getMessage());
