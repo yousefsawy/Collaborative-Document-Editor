@@ -19,11 +19,12 @@
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
             <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                <Label fx:id="ViewerIdFx" text="Viewer Session"/>
-                <Label fx:id="EditorIdFx" text="Editor Session"/>
+                <Label text="Viewer ID: "/>
+                <TextField fx:id="ViewerIdFx" promptText="Viewer Session" editable="false" focusTraversable="false"/>
+                <Label text="Editor ID: "/>
+                <TextField fx:id="EditorIdFx" promptText="Editor Session" editable="false" focusTraversable="false"/>
                 <Button text="Undo" onAction="#undoButton"/>
                 <Button text="Redo" onAction="#redoButton"/>
-
             </HBox>
         </VBox>
     </top>

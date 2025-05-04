@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -28,8 +29,8 @@ import java.util.Objects;
 
 public class EditController {
 
-    public Label ViewerIdFx;
-    public Label EditorIdFx;
+    public TextField ViewerIdFx;
+    public TextField EditorIdFx;
     public Button undoButton;
     private CRDT_TREE tree;
     private WebSocketHandler webSocketHandler;
@@ -39,6 +40,7 @@ public class EditController {
     private Document swingDocument;
     String[] users;
     String username;
+    boolean isEditor;
 
     @FXML
     private VBox usersList;
@@ -46,9 +48,9 @@ public class EditController {
     @FXML
     private TextArea documentContentArea;
 
-    public void initialize(Node[] nodes, WebSocketHandler webSocketHandler, String documentId, String username,String[] users) {
+    public void initialize(Node[] nodes, WebSocketHandler webSocketHandler, String documentId, String username,String[] users, boolean isEditor, String editorId, String viewerId) {
         this.users = new String[users.length + 1];
-
+        documentContentArea.setEditable(isEditor);
         // Copy existing users into the new array
         System.arraycopy(users, 0, this.users, 0, users.length);
 
@@ -82,9 +84,20 @@ public class EditController {
             stage.setOnCloseRequest(this::handleWindowClose);
         });
 
+        if (editorId != null && !editorId.isEmpty()) {
+            EditorIdFx.setText(editorId);
+        } else {
+            EditorIdFx.setText("");
+        }
 
-        // Handle the window close event
+        if (viewerId != null && !viewerId.isEmpty()) {
+            ViewerIdFx.setText(viewerId);
+        } else {
+            ViewerIdFx.setText("");
+        }
+
     }
+
 
     private void subscribeToOperations() {
         webSocketHandler.receiveDocumentOperation(documentId, this::executeOperationOnTree);

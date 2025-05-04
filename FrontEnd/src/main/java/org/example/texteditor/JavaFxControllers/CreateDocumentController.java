@@ -45,6 +45,8 @@ public class CreateDocumentController {
 
     @FXML
     private Label welcomeLabel;
+    private String editorId;
+    private String viewerId;
 
     public void initialize(WebSocketHandler webSocketHandler, String username) {
         this.webSocketHandler = webSocketHandler;
@@ -115,6 +117,9 @@ public class CreateDocumentController {
                 // Show success
                 System.out.println("Document Created with ID: " + body.getDocumentId());
                 this.documentId = body.getDocumentId();
+                this.editorId = body.getEditorId();
+                this.viewerId = body.getViewerId();
+
 
                 ResponseEntity<String[]> responseUsers = restTemplate.getForEntity(
                         BASE_URL + "users/" + documentId, String[].class
@@ -124,9 +129,6 @@ public class CreateDocumentController {
 
                 webSocketHandler = new WebSocketHandler();
                 webSocketHandler.connectToWebSocket();
-
-
-
 
                 webSocketHandler.connectToDocumentAsync(body.getDocumentId(), (Node[] receivedNodes) -> {
                     this.nodes = receivedNodes;
@@ -152,7 +154,7 @@ public class CreateDocumentController {
             Scene editScene = new Scene(loader.load());
 
             EditController editController = loader.getController();
-            editController.initialize(nodes, webSocketHandler, documentId, username, users);
+            editController.initialize(nodes, webSocketHandler, documentId, username, users,true,editorId, viewerId);
 
             // Get the current window and set the new scene
             Stage stage = (Stage) createDocumentButton.getScene().getWindow();

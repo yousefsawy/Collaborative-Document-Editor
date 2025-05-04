@@ -31,6 +31,8 @@ public class LoginController {
 
     String[] users;
 
+    boolean isEditor;
+
     public void initialize() {
         System.out.println("Initializing Login Controller");
         webSocketHandler = new WebSocketHandler();
@@ -81,9 +83,11 @@ public class LoginController {
                 BASE_URL + "users/" + documentId, String[].class
         );
 
-//        ResponseEntity<Boolean> responseEditor = restTemplate.getForEntity(
-//                BASE_URL + "users/" + documentId, boolean.class
-//        );
+        ResponseEntity<Boolean> responseEditor = restTemplate.getForEntity(
+                BASE_URL + "documents/" + documentId, boolean.class
+        );
+
+        isEditor = Boolean.TRUE.equals(responseEditor.getBody());
 
 
         users = responseUsers.getBody();
@@ -100,7 +104,7 @@ public class LoginController {
             Scene editScene = new Scene(loader.load());
 
             EditController editController = loader.getController();
-            editController.initialize(nodes, webSocketHandler, documentIdField.getText(), usernameField.getText(), users);
+            editController.initialize(nodes, webSocketHandler, documentIdField.getText(), usernameField.getText(), users, isEditor, "", "");
 
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(editScene);
