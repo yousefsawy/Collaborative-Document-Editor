@@ -30,7 +30,6 @@ public class CRDT_TREE {
         this.idNodeMap = new HashMap<>();
         this.displayedLength = 0;
 
-        // Handle empty array case
         if (nodes.length == 0) {
             ID rootId = new ID(docName, 0);
             this.root = new Node(rootId, "", null);
@@ -38,22 +37,19 @@ public class CRDT_TREE {
             return;
         }
 
-        // Create deep copies of all nodes to avoid reference issues
         for (Node node : nodes) {
             Node newNode = new Node(node.id, node.content, node.parentId);
-            if(!newNode.isDeleted) {
+            if (!newNode.isDeleted) {
                 displayedLength++;
             }
 
             newNode.isDeleted = node.isDeleted;
-            newNode.children = new ArrayList<>(); // Start with empty children list
+            newNode.children = new ArrayList<>();
             idNodeMap.put(newNode.id, newNode);
         }
 
-        // Set the root
         this.root = idNodeMap.get(nodes[0].id);
 
-        // Reconstruct parent-child relationships using a Set to avoid duplicates
         for (Node originalNode : nodes) {
             if (originalNode.parentId == null) {
                 continue; // Skip root node
@@ -63,24 +59,20 @@ public class CRDT_TREE {
             Node newParent = idNodeMap.get(originalNode.parentId);
 
             if (newParent != null && newChild != null) {
-                // Use a Set operation to ensure uniqueness
                 if (!newParent.children.contains(newChild.id)) {
                     newParent.children.add(newChild.id);
                 }
             }
         }
 
-        // Debug check: Verify no duplicate children in any node
         for (Node node : idNodeMap.values()) {
             Set<ID> uniqueChildren = new HashSet<>(node.children);
             if (uniqueChildren.size() < node.children.size()) {
-                // There are duplicates in the children list
-                node.children = new ArrayList<>(uniqueChildren); // Replace with deduplicated list
+                node.children = new ArrayList<>(uniqueChildren);
                 System.out.println("Fixed duplicates in node: " + node.id);
             }
         }
     }
-
 
     //local ops
     private Node localInsertOne(int position, String text, long timeStamp) {
@@ -138,7 +130,7 @@ public class CRDT_TREE {
 
     // Delete one character
     public Operation localDeleteOne(int position) {
-        if(position <= 0 || position >= displayedLength) {
+        if (position <= 0 || position >= displayedLength) {
             return null;
         }
 
@@ -167,8 +159,6 @@ public class CRDT_TREE {
         if (parent == null) {
             throw new IllegalArgumentException("Parent not found for remote insert: " + parentId);
         }
-
-        // 3. Create and link the new node
         Node newNode = new Node(id, text, parentId);
         parent.children.add(newNode.id);
         idNodeMap.put(id, newNode);
@@ -183,11 +173,9 @@ public class CRDT_TREE {
             case INSERT:
                 for (Node opNode : op.nodes) {
                     if (idNodeMap.containsKey(opNode.id)) {
-                        // Node exists, undelete it
                         Node localNode = idNodeMap.get(opNode.id);
                         localNode.isDeleted = false;
                     } else {
-                        // Node doesn't exist, create it
                         remoteInsert(opNode.parentId, opNode.content, opNode.id);
                     }
                     this.displayedLength++;
@@ -207,12 +195,11 @@ public class CRDT_TREE {
                 break;
 
             case UNDO:
-                // For UNDO operations, the effect depends on the original operation type
                 for (Node opNode : op.nodes) {
                     Node localNode = idNodeMap.get(opNode.id);
                     if (localNode != null) {
                         // Toggle deletion state
-                        if(localNode.isDeleted) {
+                        if (localNode.isDeleted) {
                             this.displayedLength++;
                         } else {
                             this.displayedLength--;
@@ -226,26 +213,22 @@ public class CRDT_TREE {
                 break;
 
             case REDO:
-                // For REDO operations, similar to UNDO
                 for (Node opNode : op.nodes) {
                     Node localNode = idNodeMap.get(opNode.id);
                     if (localNode != null) {
-                        // Toggle deletion state
-                        if(localNode.isDeleted) {
+                        if (localNode.isDeleted) {
                             this.displayedLength++;
                         } else {
                             this.displayedLength--;
                         }
                         localNode.isDeleted = !localNode.isDeleted;
                     } else {
-                        // If node doesn't exist, recreate it
                         System.err.println("Tried to update missing node: " + opNode.id);
                     }
                 }
                 break;
         }
     }
-
 
     public Operation undo() {
         if (undoStack.isEmpty()) {
@@ -255,9 +238,7 @@ public class CRDT_TREE {
         Operation op = undoStack.pop();
         Node[] nodes = op.nodes;
 
-
         if (op.type == Operation.Type.INSERT) {
-            // Undo insert → delete the nodes
             for (Node node : nodes) {
                 Node localNode = idNodeMap.get(node.id);
                 if (localNode != null) {
@@ -265,16 +246,13 @@ public class CRDT_TREE {
                     localNode.isDeleted = true;
                 }
             }
-            // Create an UNDO operation for remote propagation
             Operation undoOp = new Operation(Operation.Type.UNDO, nodes, userName);
 
-            // For local redo, use a DELETE operation
             Operation redoOp = new Operation(Operation.Type.INSERT, nodes, userName);
             redoStack.push(redoOp);
 
             return undoOp;
         } else if (op.type == Operation.Type.DELETE) {
-            // Undo delete → undelete the nodes
             for (Node node : nodes) {
                 Node localNode = idNodeMap.get(node.id);
                 if (localNode != null) {
@@ -282,10 +260,8 @@ public class CRDT_TREE {
                     localNode.isDeleted = false;
                 }
             }
-            // Create an UNDO operation for remote propagation
             Operation undoOp = new Operation(Operation.Type.UNDO, nodes, userName);
             Operation redoOp = new Operation(Operation.Type.DELETE, nodes, userName);
-            // For local redo, use an INSERT operation
 
             redoStack.push(redoOp);
 
@@ -304,7 +280,6 @@ public class CRDT_TREE {
         Node[] nodes = op.nodes;
 
         if (op.type == Operation.Type.INSERT) {
-            // Redo insert → undelete nodes
             for (Node node : nodes) {
                 Node localNode = idNodeMap.get(node.id);
                 if (localNode != null) {
@@ -312,16 +287,12 @@ public class CRDT_TREE {
                     localNode.isDeleted = false;
                 }
             }
-            // Create a REDO operation for remote propagation
             Operation redoOp = new Operation(Operation.Type.REDO, nodes, userName);
-
-            // For local undo, use a DELETE operation
             Operation undoOp = new Operation(Operation.Type.INSERT, nodes, userName);
             undoStack.push(undoOp);
 
             return redoOp;
         } else if (op.type == Operation.Type.DELETE) {
-            // Redo delete → delete nodes
             for (Node node : nodes) {
                 Node localNode = idNodeMap.get(node.id);
                 if (localNode != null) {
@@ -329,10 +300,8 @@ public class CRDT_TREE {
                     localNode.isDeleted = true;
                 }
             }
-            // Create a REDO operation for remote propagation
             Operation redoOp = new Operation(Operation.Type.REDO, nodes, userName);
 
-            // For local undo, use an INSERT operation
             Operation undoOp = new Operation(Operation.Type.DELETE, nodes, userName);
             undoStack.push(undoOp);
 
@@ -342,7 +311,6 @@ public class CRDT_TREE {
         return null;
     }
 
-
     public Node[] sendTree() {
         if (root == null) {
             return new Node[0];
@@ -350,22 +318,17 @@ public class CRDT_TREE {
 
         ArrayList<Node> result = new ArrayList<>();
 
-        // Use a Set to track which nodes we've already visited by ID
         Set<ID> visitedIds = new HashSet<>();
 
-        // Queue for BFS
         ArrayList<Node> queue = new ArrayList<>();
         queue.add(root);
         visitedIds.add(root.id);
 
-        // BFS traversal
         while (!queue.isEmpty()) {
             Node current = queue.remove(0);
 
-            // Add current node to result
             result.add(current);
 
-            // Add all children to the queue (if not already visited)
             for (ID childId : current.children) {
                 if (!visitedIds.contains(childId)) {
                     Node childNode = getNodeById(childId);
@@ -377,10 +340,8 @@ public class CRDT_TREE {
             }
         }
 
-        // Convert ArrayList to array
         return result.toArray(new Node[0]);
     }
-
 
     // helper funcitons
     public Node getNodeById(ID id) {
@@ -432,7 +393,7 @@ public class CRDT_TREE {
     public Integer getDisplayedLength() {
         return displayedLength;
     }
-    // Simple counter class
+
     private static class Counter {
 
         int value = 0;
@@ -475,14 +436,11 @@ public class CRDT_TREE {
         if (node == null) {
             return "";
         }
-
-        // Start with the current node's content
         StringBuilder sb = new StringBuilder();
         if (!node.isDeleted) {
             sb.append(node.content);
         }
 
-        // Sort children as specified
         ArrayList<ID> children = node.children;
         children.sort((a, b) -> {
             if (b.timeStamp != a.timeStamp) {
@@ -491,21 +449,16 @@ public class CRDT_TREE {
             return a.user.compareTo(b.user); // ascending user
         });
 
-        // Recursively get content from children
         for (ID childID : children) {
             Node child = idNodeMap.get(childID);
-            sb.append(getDocument(child)); // depth-first traversal
+            sb.append(getDocument(child));
         }
 
         return sb.toString();
     }
 
-    // Public function that starts from root
     public String getDocument() {
         return getDocument(root);
     }
 
-
 }
-
-
