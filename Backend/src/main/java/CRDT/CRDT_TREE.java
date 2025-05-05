@@ -6,13 +6,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CRDT_TREE {
 
     public String docName;
     public String userName;
     public Node root;
-    public Map<ID, Node> idNodeMap;
+    public ConcurrentHashMap<ID, Node> idNodeMap;
 
     private Stack<Operation> undoStack = new Stack<>();
     private Stack<Operation> redoStack = new Stack<>();
@@ -22,7 +23,7 @@ public class CRDT_TREE {
     public CRDT_TREE(String docName, String userName) {
         ID owner = new ID(docName, 0);
         this.root = new Node(owner, "", null);
-        idNodeMap = new HashMap<>();
+        idNodeMap = new ConcurrentHashMap<>();
         idNodeMap.put(owner, this.root);
         this.docName = docName;
         this.userName = userName;
@@ -32,7 +33,7 @@ public class CRDT_TREE {
     public CRDT_TREE(String docName, String userName, Node[] nodes) {
         this.docName = docName;
         this.userName = userName;
-        this.idNodeMap = new HashMap<>();
+        this.idNodeMap = new ConcurrentHashMap<>();
         this.displayedLength = 0;
 
         if (nodes.length == 0) {
